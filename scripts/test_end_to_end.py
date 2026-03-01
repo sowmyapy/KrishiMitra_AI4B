@@ -50,7 +50,7 @@ async def step1_create_farmer():
     print_section("STEP 1: Create Test Farmer")
     
     farmer_data = {
-        "phone_number": "+918095666788",
+        "phone_number": "+918151910856",
         "preferred_language": "hi",
         "timezone": "Asia/Kolkata"
     }
