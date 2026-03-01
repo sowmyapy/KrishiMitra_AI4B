@@ -1,14 +1,21 @@
 """
-Text-to-Speech service using ElevenLabs
+Text-to-Speech service using ElevenLabs or AWS Polly
 """
 import logging
 from typing import Dict, Optional
-from elevenlabs import generate, Voice, VoiceSettings
-from elevenlabs.client import ElevenLabs
 
 from src.config.settings import settings
 
 logger = logging.getLogger(__name__)
+
+# Try to import ElevenLabs, but make it optional
+try:
+    from elevenlabs import generate, Voice, VoiceSettings
+    from elevenlabs.client import ElevenLabs
+    ELEVENLABS_AVAILABLE = True
+except ImportError:
+    ELEVENLABS_AVAILABLE = False
+    logger.warning("ElevenLabs not available, will use AWS Polly only")
 
 
 class TextToSpeechService:
@@ -31,9 +38,15 @@ class TextToSpeechService:
     
     def __init__(self):
         """Initialize TTS service"""
-        self.client = ElevenLabs(api_key=settings.elevenlabs_api_key)
+        if ELEVENLABS_AVAILABLE and settings.elevenlabs_api_key:
+            self.client = ElevenLabs(api_key=settings.elevenlabs_api_key)
+            self.use_elevenlabs = True
+            logger.info("Text-to-Speech service initialized with ElevenLabs")
+        else:
+            self.client = None
+            self.use_elevenlabs = False
+            logger.info("Text-to-Speech service initialized (AWS Polly only)")
         self.cache = {}  # Simple in-memory cache for common phrases
-        logger.info("Text-to-Speech service initialized")
     
     async def synthesize(
         self,
@@ -54,6 +67,12 @@ class TextToSpeechService:
         Returns:
             Audio data as bytes
         """
+        if not self.use_elevenlabs:
+            raise NotImplementedError(
+                "ElevenLabs not available. "
+                "Use AWS Polly via speech_factory instead."
+            )
+        
         # Check cache first
         cache_key = f"{text}_{language}_{voice_gender}"
         if cache_key in self.cache:

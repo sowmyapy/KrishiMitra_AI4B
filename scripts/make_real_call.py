@@ -23,7 +23,7 @@ async def make_advisory_call():
     print("="*70)
     
     # Farmer details
-    farmer_phone = "+918095666788"
+    farmer_phone = "+918151910856"  # Change this to your desired number
     farmer_language = "hi"
     
     # Advisory details

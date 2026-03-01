@@ -1,14 +1,21 @@
 """
-Speech-to-Text service using OpenAI Whisper
+Speech-to-Text service using OpenAI Whisper or AWS Transcribe
 """
 import logging
 from typing import Dict, Optional
 import io
-from openai import OpenAI
 
 from src.config.settings import settings
 
 logger = logging.getLogger(__name__)
+
+# Try to import OpenAI, but make it optional
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    logger.warning("OpenAI not available, will use AWS Transcribe only")
 
 
 class SpeechToTextService:
@@ -31,8 +38,14 @@ class SpeechToTextService:
     
     def __init__(self):
         """Initialize STT service"""
-        self.client = OpenAI(api_key=settings.openai_api_key)
-        logger.info("Speech-to-Text service initialized")
+        if OPENAI_AVAILABLE and settings.openai_api_key:
+            self.client = OpenAI(api_key=settings.openai_api_key)
+            self.use_openai = True
+            logger.info("Speech-to-Text service initialized with OpenAI")
+        else:
+            self.client = None
+            self.use_openai = False
+            logger.info("Speech-to-Text service initialized (AWS Transcribe only)")
     
     async def transcribe(
         self,
@@ -51,6 +64,12 @@ class SpeechToTextService:
         Returns:
             Transcription result with text and metadata
         """
+        if not self.use_openai:
+            raise NotImplementedError(
+                "OpenAI Whisper not available. "
+                "Use AWS Transcribe via speech_factory instead."
+            )
+        
         try:
             # Create file-like object
             audio_file = io.BytesIO(audio_data)

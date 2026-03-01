@@ -131,6 +131,46 @@ python src/main.py
 
 Access the API at http://localhost:8000 and documentation at http://localhost:8000/api/v1/docs
 
+## Making Voice Calls
+
+KrishiMitra can make actual voice calls to farmers with AI-generated advisories in Hindi and other Indian languages.
+
+### Quick Start - Make Your First Call
+
+**See [START_HERE_VOICE_CALLS.md](START_HERE_VOICE_CALLS.md) for complete guide.**
+
+```powershell
+# 1. Verify setup
+python scripts/verify_call_setup.py
+
+# 2. Start server (Terminal 1)
+uvicorn src.main:app --reload
+
+# 3. Start ngrok (Terminal 2)
+ngrok http 8000
+
+# 4. Make call (Terminal 3)
+python scripts/make_real_call.py
+# Enter webhook URL: https://abc123.ngrok.io/voice/advisory
+```
+
+### Voice Call Documentation
+
+- [**START_HERE_VOICE_CALLS.md**](START_HERE_VOICE_CALLS.md) - **Complete setup guide**
+- [CALL_NOW_QUICKSTART.md](CALL_NOW_QUICKSTART.md) - 5-minute quickstart
+- [VOICE_CALL_FLOW.md](VOICE_CALL_FLOW.md) - System architecture
+- [MAKE_REAL_CALL_GUIDE.md](MAKE_REAL_CALL_GUIDE.md) - Detailed reference
+- [VOICE_CALL_ALTERNATIVES.md](VOICE_CALL_ALTERNATIVES.md) - Production options
+
+### Voice Call Features
+
+- ✓ Real voice calls via Twilio
+- ✓ Hindi and 10+ Indian languages
+- ✓ AI-generated advisories
+- ✓ Interactive (press 1 to replay)
+- ✓ AWS Polly text-to-speech
+- ✓ Call recording and logging
+
 ### Prerequisites
 
 **For AWS-Only Setup**:
