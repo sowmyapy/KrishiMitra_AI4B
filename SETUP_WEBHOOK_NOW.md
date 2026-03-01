@@ -94,9 +94,9 @@ C:\ngrok\ngrok.exe http 8000
 
 **Check .env file** has:
 ```env
-TWILIO_ACCOUNT_SID=AC675ef23df325351b1b8f8a7b6e67635c
-TWILIO_AUTH_TOKEN=fadff2426e040d4333c71eac1fa19ed8
-TWILIO_PHONE_NUMBER=+918095666788
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_PHONE_NUMBER=+1234567890
 ```
 
 ### Phone number not verified
