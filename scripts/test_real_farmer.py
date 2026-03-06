@@ -22,7 +22,7 @@ BASE_URL = "http://127.0.0.1:8000"
 # ============================================================================
 # REAL FARMER DATA - UPDATE THESE VALUES
 # ============================================================================
-FARMER_PHONE = "+918151910856"  # Your phone number
+FARMER_PHONE = "+918095666788"  # Your phone number (verified in Twilio)
 FARMER_LANGUAGE = "hi"  # Hindi
 PLOT_LATITUDE = 13.2443  # Pune area - UPDATE with real coordinates
 PLOT_LONGITUDE = 77.7122  # Pune area - UPDATE with real coordinates

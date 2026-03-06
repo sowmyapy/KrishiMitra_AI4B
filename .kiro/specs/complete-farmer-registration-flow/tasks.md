@@ -1,0 +1,92 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - Complete Registration Creates Both Records
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: For deterministic bugs, scope the property to the concrete failing case(s) to ensure reproducibility
+  - Test that when a user submits the registration form with complete farmer and plot data (phone_number, preferred_language, timezone, latitude, longitude, area_hectares, crop_types, planting_date), both farmer and plot records are created in the database
+  - The test assertions should verify: (1) POST /farmers/ is called with farmer data, (2) POST /farmers/{farmer_id}/plots is called with plot data, (3) both records exist in database with matching farmer_id
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found: only POST /farmers/ is called, no plot creation call is made, plot data is discarded
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3_
+
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Form Validation and UI Behavior
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs (form interactions without submission)
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Test cases to observe and capture:
+    - Form validation with invalid inputs (empty phone, invalid coordinates, zero area) displays validation errors
+    - MapPicker component correctly captures latitude/longitude when user clicks map
+    - Crop selection dropdown updates form state with selected crops array
+    - Cancel button navigates back to /farmers list
+    - JWT Bearer token is included in Authorization header for API calls
+    - Form fields render correctly with all farmer and plot inputs
+    - Loading state with CircularProgress displays during API calls
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [x] 3. Fix for incomplete farmer registration flow
+
+  - [x] 3.1 Create useCreatePlot hook in frontend/src/hooks/useFarmers.ts
+    - Import PlotFormData type from @/types/farmer
+    - Create new React Query mutation hook using useMutation
+    - Mutation function should call apiClient.post with URL `/farmers/${farmerId}/plots`
+    - Send plot data in request body: { latitude, longitude, area_hectares, crop_types, planting_date }
+    - Include onSuccess callback to invalidate ['farmers'] query cache
+    - Export useCreatePlot hook from module
+    - _Bug_Condition: isBugCondition(input) where input contains valid farmer and plot data and formSubmitted = true_
+    - _Expected_Behavior: Sequential API calls - POST /farmers/ followed by POST /farmers/{farmer_id}/plots_
+    - _Preservation: Existing form validation, MapPicker functionality, JWT authentication, and UI navigation remain unchanged_
+    - _Requirements: 2.1, 2.2_
+
+  - [x] 3.2 Update FarmerRegistration.tsx onSubmit handler for sequential API calls
+    - Import useCreatePlot hook from @/hooks/useFarmers
+    - Initialize createPlot hook: `const createPlot = useCreatePlot()`
+    - Modify onSubmit handler to implement sequential API calls:
+      - First: await createFarmer.mutateAsync() with farmer data
+      - Extract farmer_id from farmer creation response
+      - Second: await createPlot.mutateAsync() with farmer_id and data.plot
+      - Navigate to /farmers and show success only after BOTH calls succeed
+    - Add error handling for each step with specific error messages:
+      - Farmer creation failure: "Failed to create farmer: [error detail]"
+      - Plot creation failure: "Farmer created but plot creation failed: [error detail]"
+    - Update loading state check to: `createFarmer.isPending || createPlot.isPending`
+    - _Bug_Condition: isBugCondition(input) where input contains valid farmer and plot data and formSubmitted = true_
+    - _Expected_Behavior: Both farmer and plot records created with matching farmer_id_
+    - _Preservation: Form validation, MapPicker, JWT auth, Cancel button, and all non-submission interactions remain unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.3 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Complete Registration Creates Both Records
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify: (1) POST /farmers/ is called, (2) POST /farmers/{farmer_id}/plots is called with correct farmer_id, (3) both records exist in database
+    - _Requirements: 2.1, 2.2, 2.3_
+
+  - [x] 3.4 Verify preservation tests still pass
+    - **Property 2: Preservation** - Form Validation and UI Behavior
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix: form validation, MapPicker, crop selection, Cancel button, JWT auth, form rendering, loading state
+    - Verify no existing form behavior has changed
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run all tests (exploration test + preservation tests)
+  - Verify both farmer and plot are created when form is submitted with complete data
+  - Verify all existing form interactions work identically to before the fix
+  - Verify error handling displays appropriate messages for each failure scenario
+  - Verify loading state is active during both API calls
+  - Ask the user if questions arise

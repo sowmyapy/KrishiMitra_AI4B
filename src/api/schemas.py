@@ -38,7 +38,6 @@ class FarmerResponse(BaseModel):
 
 # Farm Plot schemas
 class FarmPlotCreate(BaseModel):
-    farmer_id: UUID
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     area_hectares: float = Field(..., gt=0)
@@ -63,13 +62,12 @@ class FarmPlotResponse(BaseModel):
 class AdvisoryResponse(BaseModel):
     advisory_id: UUID
     farmer_id: UUID
-    plot_id: UUID
+    farm_plot_id: UUID
     stress_type: str
-    risk_score: float
-    advisory_text: str
-    language: str
+    urgency_level: str
+    actions: list
     created_at: datetime
-    delivered: bool
+    expires_at: datetime
     
     class Config:
         from_attributes = True

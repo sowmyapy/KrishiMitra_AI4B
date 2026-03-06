@@ -28,8 +28,10 @@ class Advisory(Base):
     farmer_id = Column(UUID(), ForeignKey("farmers.farmer_id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Advisory content
+    advisory_text = Column(Text, nullable=True)  # Full advisory message text
     stress_type = Column(String(20), nullable=False)
     urgency_level = Column(SQLEnum(UrgencyLevel), nullable=False)
+    risk_score = Column(Float, nullable=True)  # Risk score (0-100)
     actions = Column(JSONB, nullable=False)  # List of actions with details
     
     # Metadata

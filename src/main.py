@@ -11,7 +11,7 @@ from src.config.logging_config import setup_logging
 from src.config.database import engine, Base
 
 # Import API routers
-from src.api import farmers, advisories, voice
+from src.api import farmers, advisories, voice, monitoring, monitoring
 
 # Setup logging
 setup_logging()
@@ -59,7 +59,9 @@ app.add_middleware(
 # Include API routers
 app.include_router(farmers.router, prefix=settings.api_prefix)
 app.include_router(advisories.router, prefix=settings.api_prefix)
-app.include_router(voice.router)  # Voice endpoints at root level for Twilio
+app.include_router(voice.router, prefix=settings.api_prefix)  # Voice endpoints with API prefix
+app.include_router(monitoring.router, prefix=settings.api_prefix)  # Monitoring endpoints
+app.include_router(monitoring.router, prefix=settings.api_prefix)  # Monitoring endpoints
 
 
 @app.get("/")

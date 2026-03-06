@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     twilio_account_sid: str = Field(..., env="TWILIO_ACCOUNT_SID")
     twilio_auth_token: str = Field(..., env="TWILIO_AUTH_TOKEN")
     twilio_phone_number: str = Field(..., env="TWILIO_PHONE_NUMBER")
+    ngrok_url: str = Field(default="", env="NGROK_URL")
     exotel_api_key: str = Field(default="", env="EXOTEL_API_KEY")
     exotel_api_token: str = Field(default="", env="EXOTEL_API_TOKEN")
     

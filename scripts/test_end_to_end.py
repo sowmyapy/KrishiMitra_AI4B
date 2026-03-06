@@ -50,7 +50,7 @@ async def step1_create_farmer():
     print_section("STEP 1: Create Test Farmer")
     
     farmer_data = {
-        "phone_number": "+918151910856",
+        "phone_number": "+918095666788",
         "preferred_language": "hi",
         "timezone": "Asia/Kolkata"
     }
@@ -92,12 +92,13 @@ async def step2_create_plot(farmer_id):
     
     # Sample location: Near Pune, Maharashtra
     plot_data = {
+        "farmer_id": farmer_id,
         "latitude": 18.5204,
         "longitude": 73.8567,
         "area_hectares": 2.5,
         "crop_types": ["wheat", "rice"],
-        "planting_date": (datetime.utcnow() - timedelta(days=60)).isoformat(),
-        "expected_harvest_date": (datetime.utcnow() + timedelta(days=30)).isoformat()
+        "planting_date": (datetime.utcnow() - timedelta(days=60)).date().isoformat(),
+        "expected_harvest_date": (datetime.utcnow() + timedelta(days=30)).date().isoformat()
     }
     
     token = create_test_token()
