@@ -21,10 +21,10 @@ class BedrockClient:
             'bedrock-runtime',
             region_name=settings.aws_region
         )
-        # Use Meta Llama 3 8B - Works immediately, no forms needed
-        # Note: Has strict rate limits on free tier
-        self.model_id = "meta.llama3-8b-instruct-v1:0"
-        self.model_type = "llama"  # Track which model we're using
+        # Use Amazon Nova Lite - Better rate limits and performance
+        # Cheaper and faster than Meta Llama 3
+        self.model_id = "amazon.nova-lite-v1:0"
+        self.model_type = "nova"  # Track which model we're using
         logger.info(f"Bedrock client initialized with model: {self.model_id}")
     
     async def generate_completion(
