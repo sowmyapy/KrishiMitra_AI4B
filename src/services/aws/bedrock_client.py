@@ -21,9 +21,9 @@ class BedrockClient:
             'bedrock-runtime',
             region_name=settings.aws_region
         )
-        # Use Amazon Nova Lite - Better rate limits and performance
-        # Cheaper and faster than Meta Llama 3
-        self.model_id = "amazon.nova-lite-v1:0"
+        # Use Amazon Nova Lite with regional inference profile
+        # ap-south-1 region supports Nova Lite directly
+        self.model_id = "us.amazon.nova-lite-v1:0"  # Cross-region inference profile
         self.model_type = "nova"  # Track which model we're using
         logger.info(f"Bedrock client initialized with model: {self.model_id}")
     
