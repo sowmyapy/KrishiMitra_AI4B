@@ -21,10 +21,10 @@ class BedrockClient:
             'bedrock-runtime',
             region_name=settings.aws_region
         )
-        # Use Amazon Nova Lite with regional inference profile
-        # ap-south-1 region supports Nova Lite directly
-        self.model_id = "us.amazon.nova-lite-v1:0"  # Cross-region inference profile
-        self.model_type = "nova"  # Track which model we're using
+        # Use Amazon Titan Text Express - Available in ap-south-1
+        # Reliable and good for production use
+        self.model_id = "amazon.titan-text-express-v1"
+        self.model_type = "titan"  # Track which model we're using
         logger.info(f"Bedrock client initialized with model: {self.model_id}")
     
     async def generate_completion(
