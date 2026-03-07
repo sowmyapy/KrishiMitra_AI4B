@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/api/client';
 import {
   Box,
   Typography,
@@ -36,7 +37,7 @@ export const AdvancedMonitoring = () => {
   const fetchPlotData = async () => {
     setLoading(true);
     try {
-      const farmersResponse = await fetch('http://localhost:8000/api/v1/farmers/');
+      const farmersResponse = await fetch(getApiUrl('/api/v1/farmers/'));
       const farmers = await farmersResponse.json();
 
       const plotData: PlotData[] = [];
@@ -44,7 +45,7 @@ export const AdvancedMonitoring = () => {
       for (const farmer of farmers) {
         // Simulated plot locations (in real app, fetch from backend)
         const advisoriesResponse = await fetch(
-            `http://localhost:8000/api/v1/advisories/farmer/${farmer.farmer_id}`
+            getApiUrl(`/api/v1/advisories/farmer/${farmer.farmer_id}`)
         );
         
         let healthStatus = 'unknown';

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/api/client';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import {
@@ -75,7 +76,7 @@ export const Monitoring = () => {
 
   const fetchMonitoringStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/monitoring/status');
+      const response = await fetch(getApiUrl('/api/v1/monitoring/status'));
       if (response.ok) {
         const data = await response.json();
         setMonitoringStatus(data);
@@ -88,7 +89,7 @@ export const Monitoring = () => {
   const handleStartMonitoring = async () => {
     setStatusLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/monitoring/start', {
+      const response = await fetch(getApiUrl('/api/v1/monitoring/start'), {
         method: 'POST',
       });
       if (response.ok) {
@@ -108,7 +109,7 @@ export const Monitoring = () => {
   const handleStopMonitoring = async () => {
     setStatusLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/monitoring/stop', {
+      const response = await fetch(getApiUrl('/api/v1/monitoring/stop'), {
         method: 'POST',
       });
       if (response.ok) {
@@ -129,7 +130,7 @@ export const Monitoring = () => {
     setStatusLoading(true);
     enqueueSnackbar('Running immediate check...', { variant: 'info' });
     try {
-      const response = await fetch('http://localhost:8000/api/v1/monitoring/check-now', {
+      const response = await fetch(getApiUrl('/api/v1/monitoring/check-now'), {
         method: 'POST',
       });
       if (response.ok) {
@@ -157,7 +158,7 @@ export const Monitoring = () => {
 
     try {
       // Fetch all farmers
-      const farmersResponse = await fetch('http://localhost:8000/api/v1/farmers/');
+      const farmersResponse = await fetch(getApiUrl('/api/v1/farmers/'));
       const farmers = await farmersResponse.json();
 
       // Fetch latest advisory for each farmer
@@ -166,7 +167,7 @@ export const Monitoring = () => {
       for (const farmer of farmers) {
         try {
           const advisoriesResponse = await fetch(
-            `http://localhost:8000/api/v1/advisories/farmer/${farmer.farmer_id}`
+            getApiUrl(`/api/v1/advisories/farmer/${farmer.farmer_id}`)
           );
           
           let latestAdvisory = null;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/api/client';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -49,7 +50,7 @@ export const Advisories = () => {
     setError(null);
     try {
       // Fetch all farmers first
-      const farmersResponse = await fetch('http://localhost:8000/api/v1/farmers/');
+      const farmersResponse = await fetch(getApiUrl('/api/v1/farmers/'));
       const farmers = await farmersResponse.json();
 
       // Fetch advisories for each farmer
@@ -57,7 +58,7 @@ export const Advisories = () => {
       for (const farmer of farmers) {
         try {
           const advisoriesResponse = await fetch(
-            `http://localhost:8000/api/v1/advisories/farmer/${farmer.farmer_id}`
+            getApiUrl(`/api/v1/advisories/farmer/${farmer.farmer_id}`)
           );
           if (advisoriesResponse.ok) {
             const farmerAdvisories = await advisoriesResponse.json();

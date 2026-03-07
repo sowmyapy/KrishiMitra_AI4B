@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiUrl } from '@/api/client';
 import {
   Box,
   Typography,
@@ -44,7 +45,7 @@ export const Analytics = () => {
     
     try {
       // Fetch farmers
-      const farmersResponse = await fetch('http://localhost:8000/api/v1/farmers/');
+      const farmersResponse = await fetch(getApiUrl('/api/v1/farmers/'));
       const farmers = await farmersResponse.json();
 
       // Fetch all advisories
@@ -52,7 +53,7 @@ export const Analytics = () => {
       for (const farmer of farmers) {
         try {
           const advisoriesResponse = await fetch(
-            `http://localhost:8000/api/v1/advisories/farmer/${farmer.farmer_id}`
+            getApiUrl(`/api/v1/advisories/farmer/${farmer.farmer_id}`)
           );
           if (advisoriesResponse.ok) {
             const farmerAdvisories = await advisoriesResponse.json();

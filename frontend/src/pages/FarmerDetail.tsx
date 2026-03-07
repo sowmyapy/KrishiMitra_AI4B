@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getApiUrl } from '@/api/client';
 import {
   Box,
   Typography,
@@ -59,7 +60,7 @@ export const FarmerDetail = () => {
   const fetchAdvisories = async () => {
     setLoadingAdvisories(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/advisories/farmer/${farmerId}`);
+      const response = await fetch(getApiUrl(`/api/v1/advisories/farmer/${farmerId}`));
       if (response.ok) {
         const data = await response.json();
         setAdvisories(data);
@@ -77,7 +78,7 @@ export const FarmerDetail = () => {
     
     try {
       // Call the backend to generate advisory
-      const response = await fetch(`http://localhost:8000/api/v1/advisories/generate/${farmerId}`, {
+      const response = await fetch(getApiUrl(`/api/v1/advisories/generate/${farmerId}`), {
         method: 'POST',
       });
       
@@ -102,7 +103,7 @@ export const FarmerDetail = () => {
     
     try {
       // Call the backend to initiate voice call
-      const response = await fetch(`http://localhost:8000/api/v1/voice/call/${farmerId}`, {
+      const response = await fetch(getApiUrl(`/api/v1/voice/call/${farmerId}`), {
         method: 'POST',
       });
       
@@ -144,7 +145,7 @@ export const FarmerDetail = () => {
     setMessage(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/farmers/${farmerId}`, {
+      const response = await fetch(getApiUrl(`/api/v1/farmers/${farmerId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
