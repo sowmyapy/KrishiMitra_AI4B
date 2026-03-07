@@ -17,15 +17,18 @@ class BedrockClient:
     
     def __init__(self):
         """Initialize Bedrock client"""
+        # Use us-east-1 for Bedrock (better model availability)
+        # Even though app is in ap-south-1, Bedrock calls can use different region
+        bedrock_region = "us-east-1"
+        
         self.client = boto3.client(
             'bedrock-runtime',
-            region_name=settings.aws_region
+            region_name=bedrock_region
         )
-        # Use Amazon Titan Text Express - Available in ap-south-1
-        # Reliable and good for production use
-        self.model_id = "amazon.titan-text-express-v1"
-        self.model_type = "titan"  # Track which model we're using
-        logger.info(f"Bedrock client initialized with model: {self.model_id}")
+        # Use Amazon Nova Lite - Better rate limits and cheaper than Llama
+        self.model_id = "amazon.nova-lite-v1:0"
+        self.model_type = "nova"  # Track which model we're using
+        logger.info(f"Bedrock client initialized with model: {self.model_id} in region: {bedrock_region}")
     
     async def generate_completion(
         self,
