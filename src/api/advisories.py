@@ -304,10 +304,11 @@ async def generate_advisory(
         health_status = "healthy" if ndvi_mean >= 0.6 else "moderate stress" if ndvi_mean >= 0.4 else "severe stress"
         
         # Create prompt for LLM
-        if farmer.preferred_language == "hi":
+        lang_code = farmer.preferred_language.lower()
+        if lang_code in ["hi", "hindi"]:
             lang_instruction = "हिंदी में"
             lang_name = "Hindi"
-        elif farmer.preferred_language == "te":
+        elif lang_code in ["te", "telugu"]:
             lang_instruction = "తెలుగులో"
             lang_name = "Telugu"
         else:
@@ -356,7 +357,8 @@ Generate the advisory message {lang_instruction}:"""
             logger.error(f"LLM generation failed: {llm_error}, using fallback template")
             
             # Fallback to simple template WITHOUT technical terms or symbols
-            if farmer.preferred_language == "te":
+            lang_code = farmer.preferred_language.lower()
+            if lang_code in ["te", "telugu"]:
                 if ndvi_mean >= 0.6:
                     health_desc = "మంచి ఆరోగ్యంలో ఉంది"
                 elif ndvi_mean >= 0.4:
@@ -381,7 +383,7 @@ Generate the advisory message {lang_instruction}:"""
 
 ధన్యవాదాలు."""
             
-            elif farmer.preferred_language == "hi":
+            elif lang_code in ["hi", "hindi"]:
                 if ndvi_mean >= 0.6:
                     health_desc = "अच्छी स्थिति में है"
                 elif ndvi_mean >= 0.4:
