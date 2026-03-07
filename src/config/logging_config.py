@@ -44,10 +44,16 @@ def setup_logging():
     
     # File handler for errors
     if settings.environment == "production":
-        error_handler = logging.FileHandler('logs/error.log')
-        error_handler.setLevel(logging.ERROR)
-        error_handler.setFormatter(formatter)
-        logger.addHandler(error_handler)
+        try:
+            import os
+            os.makedirs('logs', exist_ok=True)
+            error_handler = logging.FileHandler('logs/error.log')
+            error_handler.setLevel(logging.ERROR)
+            error_handler.setFormatter(formatter)
+            logger.addHandler(error_handler)
+        except Exception as e:
+            # If we can't create the log file, just skip it
+            logger.warning(f"Could not create error log file: {e}")
     
     return logger
 
