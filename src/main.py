@@ -25,10 +25,11 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Environment: {settings.environment}")
     
-    # Create database tables (in production, use Alembic migrations)
-    if settings.environment == "development":
-        logger.info("Creating database tables...")
-        Base.metadata.create_all(bind=engine)
+    # Create database tables
+    # For SQLite prototype, create tables on startup
+    # In production with PostgreSQL, use Alembic migrations instead
+    logger.info("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
     
     yield
     
