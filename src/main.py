@@ -48,9 +48,17 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Allow frontend origins in production
+allowed_origins = [
+    "http://localhost:3000",  # Local development
+    "http://localhost:5173",  # Vite dev server
+    "http://krishimitra-frontend.s3-website.ap-south-1.amazonaws.com",  # S3 frontend
+    "http://krishimitra-frontend.s3-website-ap-south-1.amazonaws.com",  # Alternative S3 URL format
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.environment == "development" else [],
+    allow_origins=["*"] if settings.environment == "development" else allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
