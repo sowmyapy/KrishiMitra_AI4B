@@ -30,6 +30,7 @@ chromadb==0.4.22
 
 # Voice Services
 twilio==8.11.1
+gtts==2.5.0  # Google Text-to-Speech for Indian languages
 # openai-whisper==20231117  # Optional: Only needed if using OpenAI STT (not AWS Transcribe)
 # elevenlabs==0.2.27  # Optional: Only needed if using ElevenLabs TTS (not AWS Polly)
 

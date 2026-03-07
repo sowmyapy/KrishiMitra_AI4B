@@ -13,7 +13,6 @@ import { Advisories } from './pages/Advisories';
 import { Monitoring } from './pages/Monitoring';
 import { AdvancedMonitoring } from './pages/AdvancedMonitoring';
 import { Analytics } from './pages/Analytics';
-import { Settings } from './pages/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,7 +40,6 @@ function App() {
                 <Route path="/monitoring" element={<Monitoring />} />
                 <Route path="/monitoring/advanced" element={<AdvancedMonitoring />} />
                 <Route path="/analytics" element={<Analytics />} />
-                <Route path="/settings" element={<Settings />} />
               </Routes>
             </Layout>
           </BrowserRouter>

@@ -4,6 +4,7 @@ Voice call service using Twilio
 import logging
 from typing import Dict, Optional, Callable
 from datetime import datetime
+from pathlib import Path
 from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse, Gather
 
@@ -86,57 +87,61 @@ class VoiceCallService:
             raise
     
     def generate_advisory_twiml(
-        self,
-        advisory_text: str,
-        language: str = "en",
-        allow_replay: bool = True
-    ) -> str:
-        """
-        Generate TwiML for advisory delivery
-        
-        Args:
-            advisory_text: Advisory message
-            language: Language code
-            allow_replay: Allow farmer to replay message
-        
-        Returns:
-            TwiML XML string
-        """
-        response = VoiceResponse()
-        
-        # Greeting
-        greeting = self._get_greeting(language)
-        response.say(greeting, language=self._get_twilio_language(language))
-        
-        # Pause
-        response.pause(length=1)
-        
-        # Advisory message
-        response.say(advisory_text, language=self._get_twilio_language(language))
-        
-        if allow_replay:
-            # Gather input for replay
-            gather = Gather(
-                num_digits=1,
-                action="/voice/advisory/replay",
-                method="POST",
-                timeout=5
+            self,
+            advisory_text: str,
+            language: str = "en",
+            allow_replay: bool = True
+        ) -> str:
+            """
+            Generate TwiML for advisory delivery
+
+            Args:
+                advisory_text: Advisory message
+                language: Language code
+                allow_replay: Allow farmer to replay message
+
+            Returns:
+                TwiML XML string
+            """
+            response = VoiceResponse()
+
+            # Use standard Twilio language codes
+            twilio_lang = self._get_twilio_language(language)
+
+            # Greeting
+            greeting = self._get_greeting(language)
+            response.say(greeting, language=twilio_lang)
+
+            # Pause
+            response.pause(length=1)
+
+            # Advisory message
+            response.say(advisory_text, language=twilio_lang)
+
+            if allow_replay:
+                # Gather input for replay
+                gather = Gather(
+                    num_digits=1,
+                    action="/api/v1/voice/advisory/replay",
+                    method="POST",
+                    timeout=5
+                )
+                gather.say(
+                    self._get_replay_prompt(language),
+                    language=twilio_lang
+                )
+                response.append(gather)
+
+            # Goodbye
+            response.say(
+                self._get_goodbye(language),
+                language=twilio_lang
             )
-            gather.say(
-                self._get_replay_prompt(language),
-                language=self._get_twilio_language(language)
-            )
-            response.append(gather)
-        
-        # Goodbye
-        response.say(
-            self._get_goodbye(language),
-            language=self._get_twilio_language(language)
-        )
-        
-        response.hangup()
-        
-        return str(response)
+
+            response.hangup()
+
+            return str(response)
+
     
     def generate_chatbot_twiml(
         self,
@@ -304,6 +309,44 @@ class VoiceCallService:
             "en": "en-IN"
         }
         return mapping.get(language_code, "en-IN")
+    
+    def _get_polly_voice(self, language_code: str) -> str:
+        """
+        Get Amazon Polly voice for language
+        Polly voices provide better pronunciation for Indian languages
+        """
+        voice_mapping = {
+            "hi": "Aditi",      # Hindi (India) - Female
+            "te": "Aditi",      # Telugu - use Hindi voice (best available)
+            "ta": "Aditi",      # Tamil - use Hindi voice
+            "mr": "Aditi",      # Marathi - use Hindi voice
+            "bn": "Aditi",      # Bengali - use Hindi voice
+            "gu": "Aditi",      # Gujarati - use Hindi voice
+            "kn": "Aditi",      # Kannada - use Hindi voice
+            "ml": "Aditi",      # Malayalam - use Hindi voice
+            "pa": "Aditi",      # Punjabi - use Hindi voice
+            "en": "Raveena"     # English (India) - Female
+        }
+        return f"Polly.{voice_mapping.get(language_code, 'Raveena')}"
+    
+    def _get_polly_voice(self, language_code: str) -> str:
+        """
+        Get Amazon Polly voice for language
+        Polly voices provide better pronunciation for Indian languages
+        """
+        voice_mapping = {
+            "hi": "Aditi",      # Hindi (India) - Female
+            "te": "Aditi",      # Telugu - use Hindi voice (best available)
+            "ta": "Aditi",      # Tamil - use Hindi voice
+            "mr": "Aditi",      # Marathi - use Hindi voice
+            "bn": "Aditi",      # Bengali - use Hindi voice
+            "gu": "Aditi",      # Gujarati - use Hindi voice
+            "kn": "Aditi",      # Kannada - use Hindi voice
+            "ml": "Aditi",      # Malayalam - use Hindi voice
+            "pa": "Aditi",      # Punjabi - use Hindi voice
+            "en": "Raveena"     # English (India) - Female
+        }
+        return f"Polly.{voice_mapping.get(language_code, 'Raveena')}"
     
     def _get_greeting(self, language: str) -> str:
         """Get greeting in language"""

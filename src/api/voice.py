@@ -89,9 +89,12 @@ async def advisory_call_webhook(request: Request, db: Session = Depends(get_db))
         to_number = form_data.get("To")      # Farmer's number
         call_status = form_data.get("CallStatus")
         
-        logger.info(f"Advisory call webhook: {call_sid}, status: {call_status}")
+        logger.info("=" * 80)
+        logger.info(f"WEBHOOK CALLED: Advisory call webhook")
+        logger.info(f"Call SID: {call_sid}, Status: {call_status}")
         logger.info(f"From: {from_number}, To: {to_number}")
         logger.info(f"All form data: {dict(form_data)}")
+        logger.info("=" * 80)
         
         # Default values
         language = "hi"

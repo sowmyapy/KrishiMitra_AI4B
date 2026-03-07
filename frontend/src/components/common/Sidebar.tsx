@@ -26,7 +26,6 @@ const menuItems = [
   { text: 'Advisories', icon: <Assignment />, path: '/advisories' },
   { text: 'Monitoring', icon: <Satellite />, path: '/monitoring' },
   { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
-  { text: 'Settings', icon: <Settings />, path: '/settings' },
 ];
 
 interface SidebarProps {

@@ -295,136 +295,127 @@ async def generate_advisory(
         # Generate advisory text in farmer's language with specific recommendations
         crop_list = ", ".join(plot.crop_types) if plot.crop_types else "crops"
         
+        # Use LLM to generate natural advisory text
+        from src.services.llm_factory import get_llm
+        
+        llm = get_llm()
+        
+        # Prepare context for LLM
+        health_status = "healthy" if ndvi_mean >= 0.6 else "moderate stress" if ndvi_mean >= 0.4 else "severe stress"
+        
+        # Create prompt for LLM
         if farmer.preferred_language == "hi":
-            stress_desc = {
-                "severe_stress": "गंभीर तनाव",
-                "water_stress": "पानी की कमी",
-                "heat_stress": "गर्मी का तनाव",
-                "moderate_stress": "मध्यम तनाव",
-                "general_stress": "सामान्य तनाव",
-                "healthy": "स्वस्थ"
-            }.get(stress_type, "तनाव")
-            
-            advisory_text = f"""
-नमस्ते किसान भाई,
+            lang_instruction = "हिंदी में"
+            lang_name = "Hindi"
+        elif farmer.preferred_language == "te":
+            lang_instruction = "తెలుగులో"
+            lang_name = "Telugu"
+        else:
+            lang_instruction = "in English"
+            lang_name = "English"
+        
+        prompt = f"""You are an agricultural advisor speaking to a farmer over the phone. Generate a natural, conversational advisory message in {lang_name}.
 
-आपकी {crop_list} फसल का विश्लेषण:
-- स्वास्थ्य स्कोर (NDVI): {ndvi_mean:.2f}
-- तापमान: {current_weather['temperature']:.1f}°C
-- आर्द्रता: {current_weather['humidity']:.0f}%
-- स्थिति: {stress_desc}
-- जोखिम स्कोर: {risk_score:.0f}%
+Farmer's crop: {crop_list}
+Crop health: {health_status}
+Temperature: {round(current_weather['temperature'])} degrees Celsius
+Humidity: {round(current_weather['humidity'])} percent
+Stress type: {stress_type}
 
-तुरंत करने योग्य कार्य:
-"""
-            
-            if stress_type in ["severe_stress", "water_stress"]:
-                advisory_text += """1. अगले 12 घंटे में सिंचाई करें - लागत लगभग 800 रुपये
-2. मिट्टी की नमी जांचें
-3. ड्रिप सिंचाई पर विचार करें - लागत 2000 रुपये
-"""
-            elif stress_type == "heat_stress":
-                advisory_text += """1. सुबह या शाम को सिंचाई करें - लागत 500 रुपये
-2. मल्चिंग करें - लागत 1250 रुपये
-3. छाया जाल का उपयोग करें (यदि संभव हो)
-"""
-            elif stress_type == "moderate_stress":
-                advisory_text += """1. 24 घंटे में सिंचाई करें - लागत 500 रुपये
-2. पोषक तत्व स्प्रे करें - लागत 800 रुपये
-3. नियमित निगरानी करें
-"""
-            else:
-                advisory_text += """1. नियमित निगरानी जारी रखें
-2. मौसम पूर्वानुमान देखें
-3. अगली सिंचाई 3-4 दिन में
-"""
-            
-            advisory_text += f"\n\nमौसम की जानकारी:\n- तापमान: {current_weather['temperature']:.1f}°C\n- आर्द्रता: {current_weather['humidity']:.0f}%\n\nकृपया जल्द से जल्द कार्रवाई करें।\nधन्यवाद।"
-            
-        elif farmer.preferred_language == "te":  # Telugu
-            stress_desc = {
-                "severe_stress": "తీవ్రమైన ఒత్తిడి",
-                "water_stress": "నీటి కొరత",
-                "heat_stress": "వేడి ఒత్తిడి",
-                "moderate_stress": "మితమైన ఒత్తిడి",
-                "general_stress": "సాధారణ ఒత్తిడి",
-                "healthy": "ఆరోగ్యకరమైన"
-            }.get(stress_type, "ఒత్తిడి")
-            
-            advisory_text = f"""
-నమస్కారం రైతు గారు,
+CRITICAL INSTRUCTIONS FOR VOICE DELIVERY:
+1. Write ONLY in {lang_name} script - NO English words, NO technical terms like NDVI
+2. Use simple, everyday language that farmers understand
+3. Spell out ALL numbers in words (not digits) - say "ఐదు వందల" not "500"
+4. NO symbols like %, °C, ₹ - spell everything out in words
+5. Keep it conversational and natural for phone calls
+6. Maximum 150 words
+7. Structure: greeting, crop status, 2-3 simple actions with costs in words, closing
 
-మీ {crop_list} పంట విశ్లేషణ:
-- ఆరోగ్య స్కోరు (NDVI): {ndvi_mean:.2f}
-- ఉష్ణోగ్రత: {current_weather['temperature']:.1f}°C
-- తేమ: {current_weather['humidity']:.0f}%
-- స్థితి: {stress_desc}
-- ప్రమాద స్కోరు: {risk_score:.0f}%
+Example structure in {lang_name}:
+- Start with a warm greeting
+- Tell them about their crop health in simple terms (avoid technical jargon)
+- Give 2-3 specific actions they should take with costs spelled out
+- End with encouragement
 
-తక్షణ చర్యలు:
-"""
+Generate the advisory message {lang_instruction}:"""
+        
+        try:
+            messages = [
+                {"role": "user", "content": prompt}
+            ]
             
-            if stress_type in ["severe_stress", "water_stress"]:
-                advisory_text += """1. 12 గంటల్లో నీటిపారుదల చేయండి - ఖర్చు సుమారు ₹800
-2. నేల తేమను తనిఖీ చేయండి
-3. డ్రిప్ నీటిపారుదలను పరిగణించండి - ఖర్చు ₹2000
-"""
-            elif stress_type == "heat_stress":
-                advisory_text += """1. ఉదయం లేదా సాయంత్రం నీటిపారుదల చేయండి - ఖర్చు ₹500
-2. మల్చింగ్ చేయండి - ఖర్చు ₹1250
-3. నీడ వలలను ఉపయోగించండి (వీలైతే)
-"""
-            elif stress_type == "moderate_stress":
-                advisory_text += """1. 24 గంటల్లో నీటిపారుదల చేయండి - ఖర్చు ₹500
-2. పోషక స్ప్రే చేయండి - ఖర్చు ₹800
-3. క్రమం తప్పకుండా పర్యవేక్షించండి
-"""
-            else:
-                advisory_text += """1. క్రమం తప్పకుండా పర్యవేక్షణ కొనసాగించండి
-2. వాతావరణ సూచనలను చూడండి
-3. తదుపరి నీటిపారుదల 3-4 రోజుల్లో
-"""
+            advisory_text = await llm.generate_completion(
+                messages=messages,
+                temperature=0.7,
+                max_tokens=500
+            )
             
-            advisory_text += f"\n\nవాతావరణ సమాచారం:\n- ఉష్ణోగ్రత: {current_weather['temperature']:.1f}°C\n- తేమ: {current_weather['humidity']:.0f}%\n\nదయచేసి త్వరగా చర్య తీసుకోండి।\nధన్యవాదాలు।"
+            logger.info(f"LLM generated advisory in {lang_name}: {len(advisory_text)} chars")
             
-        else:  # English (default for ta, mr, and other languages)
-            stress_desc = stress_type.replace('_', ' ').title()
+        except Exception as llm_error:
+            logger.error(f"LLM generation failed: {llm_error}, using fallback template")
             
-            advisory_text = f"""
-Hello Farmer,
+            # Fallback to simple template WITHOUT technical terms or symbols
+            if farmer.preferred_language == "te":
+                if ndvi_mean >= 0.6:
+                    health_desc = "మంచి ఆరోగ్యంలో ఉంది"
+                elif ndvi_mean >= 0.4:
+                    health_desc = "సాధారణ ఆరోగ్యంలో ఉంది"
+                else:
+                    health_desc = "బలహీనంగా ఉంది"
+                
+                # Spell out temperature in words
+                temp = round(current_weather['temperature'])
+                temp_words = {
+                    25: "ఇరవై ఐదు", 26: "ఇరవై ఆరు", 27: "ఇరవై ఏడు", 28: "ఇరవై ఎనిమిది",
+                    29: "ఇరవై తొమ్మిది", 30: "ముప్పై", 31: "ముప్పై ఒకటి", 32: "ముప్పై రెండు"
+                }.get(temp, str(temp))
+                
+                advisory_text = f"""నమస్కారం రైతు గారు,
 
-Analysis of your {crop_list} crop:
-- Health Score (NDVI): {ndvi_mean:.2f}
-- Temperature: {current_weather['temperature']:.1f}°C
-- Humidity: {current_weather['humidity']:.0f}%
-- Status: {stress_desc}
-- Risk Score: {risk_score:.0f}%
+మీ పంట {health_desc}. ఉష్ణోగ్రత {temp_words} డిగ్రీలు.
 
-Immediate Actions:
-"""
+చర్యలు:
+ఒకటి: ఇరవై నాలుగు గంటల్లో నీటిపారుదల చేయండి.
+రెండు: క్రమం తప్పకుండా పర్యవేక్షించండి.
+
+ధన్యవాదాలు."""
             
-            if stress_type in ["severe_stress", "water_stress"]:
-                advisory_text += """1. Irrigate within 12 hours - Cost approx ₹800
-2. Check soil moisture levels
-3. Consider drip irrigation - Cost ₹2000
-"""
-            elif stress_type == "heat_stress":
-                advisory_text += """1. Irrigate in morning or evening - Cost ₹500
-2. Apply mulch - Cost ₹1250
-3. Use shade nets if possible
-"""
-            elif stress_type == "moderate_stress":
-                advisory_text += """1. Irrigate within 24 hours - Cost ₹500
-2. Apply nutrient spray - Cost ₹800
-3. Monitor regularly
-"""
-            else:
-                advisory_text += """1. Continue regular monitoring
-2. Check weather forecast
-3. Next irrigation in 3-4 days
-"""
+            elif farmer.preferred_language == "hi":
+                if ndvi_mean >= 0.6:
+                    health_desc = "अच्छी स्थिति में है"
+                elif ndvi_mean >= 0.4:
+                    health_desc = "सामान्य स्थिति में है"
+                else:
+                    health_desc = "कमजोर है"
+                
+                # Spell out temperature in words
+                temp = round(current_weather['temperature'])
+                temp_words = {
+                    25: "पच्चीस", 26: "छब्बीस", 27: "सत्ताईस", 28: "अट्ठाईस",
+                    29: "उनतीस", 30: "तीस", 31: "इकतीस", 32: "बत्तीस"
+                }.get(temp, str(temp))
+                
+                advisory_text = f"""नमस्ते किसान भाई,
+
+आपकी फसल {health_desc}. तापमान {temp_words} डिग्री.
+
+कार्य:
+पहला: चौबीस घंटे में सिंचाई करें.
+दूसरा: नियमित निगरानी करें.
+
+धन्यवाद."""
             
-            advisory_text += f"\n\nWeather Info:\n- Temperature: {current_weather['temperature']:.1f}°C\n- Humidity: {current_weather['humidity']:.0f}%\n\nPlease take action soon.\nThank you."
+            else:  # English
+                advisory_text = f"""Hello Farmer,
+
+Your crop health is {health_status}. Temperature is {round(current_weather['temperature'])} degrees.
+
+Actions:
+One: Irrigate within twenty four hours.
+Two: Monitor regularly.
+
+Thank you."""
         
         # Create advisory with proper structure
         from src.models.advisory import UrgencyLevel
@@ -456,6 +447,10 @@ Immediate Actions:
             }
         ]
         
+        # Debug logging
+        logger.info(f"Creating advisory with advisory_text length: {len(advisory_text) if advisory_text else 0}")
+        logger.info(f"Creating advisory with risk_score: {risk_score}")
+        
         advisory = Advisory(
             farmer_id=farmer_id,
             farm_plot_id=plot.plot_id,
@@ -470,6 +465,10 @@ Immediate Actions:
         db.add(advisory)
         db.commit()
         db.refresh(advisory)
+        
+        # Debug: verify after save
+        logger.info(f"After save - advisory_text length: {len(advisory.advisory_text) if advisory.advisory_text else 0}")
+        logger.info(f"After save - risk_score: {advisory.risk_score}")
         
         logger.info(f"Generated advisory {advisory.advisory_id} for farmer {farmer_id}")
         
