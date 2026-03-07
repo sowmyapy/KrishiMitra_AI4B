@@ -3,8 +3,14 @@ Logging configuration
 """
 import logging
 import sys
-from pythonjsonlogger import jsonlogger
 from .settings import settings
+
+# Try to import pythonjsonlogger, but make it optional
+try:
+    from pythonjsonlogger import jsonlogger
+    HAS_JSON_LOGGER = True
+except ImportError:
+    HAS_JSON_LOGGER = False
 
 
 def setup_logging():
@@ -20,7 +26,7 @@ def setup_logging():
     # Console handler with JSON formatting
     console_handler = logging.StreamHandler(sys.stdout)
     
-    if settings.environment == "production":
+    if settings.environment == "production" and HAS_JSON_LOGGER:
         # JSON format for production (easier to parse)
         formatter = jsonlogger.JsonFormatter(
             '%(timestamp)s %(level)s %(name)s %(message)s',
