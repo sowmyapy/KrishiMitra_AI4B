@@ -1,291 +1,334 @@
-# KrishiMitra
+# KrishiMitra 🌾
 
-**Empowering farmers with AI-driven insights, delivered by voice**
+**AI-Powered Agricultural Advisory System for Indian Farmers**
 
-## Overview
+[![AWS](https://img.shields.io/badge/AWS-Deployed-orange)](http://krishimitra-prod.eba-gz6myy8n.ap-south-1.elasticbeanstalk.com)
+[![Frontend](https://img.shields.io/badge/Frontend-Live-green)](http://krishimitra-frontend.s3-website.ap-south-1.amazonaws.com)
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Latest-teal)](https://fastapi.tiangolo.com/)
 
-KrishiMitra is an AI-powered agricultural early warning system that monitors crop health using satellite imagery and weather data. When potential issues are detected, the system proactively contacts farmers via voice calls in their local language, providing personalized, actionable advice through natural conversations.
+## 🎯 Overview
 
-## Key Features
+KrishiMitra is a production-ready AI-powered agricultural advisory system that helps farmers make data-driven decisions using satellite imagery, weather data, and AI-generated insights delivered in their local language (Hindi/Telugu) via voice calls.
 
-- 🛰️ **Satellite Monitoring**: Continuous crop health monitoring using satellite imagery (NDVI, moisture levels)
-- 🌤️ **Weather Integration**: Real-time weather data analysis and forecasting
-- 🤖 **Agentic AI**: 5 specialized AI agents working together for intelligent decision-making
-- 🎙️ **Voice Chatbot**: Natural speech conversations in 10+ Indian languages
-- 📞 **Proactive Alerts**: Early warnings 3+ days before critical crop damage
-- 💬 **24/7 Support**: Interactive voice assistant available anytime
-- 📊 **Continuous Learning**: System improves automatically from farmer outcomes
+**Live Demo**: 
+- Frontend: http://krishimitra-frontend.s3-website.ap-south-1.amazonaws.com
+- Backend API: http://krishimitra-prod.eba-gz6myy8n.ap-south-1.elasticbeanstalk.com
 
-## Architecture
+## ✨ Key Features
 
-- **Backend**: Python (FastAPI)
-- **ML/AI**: TensorFlow, scikit-learn, OpenAI GPT-4 / AWS Bedrock
-- **Databases**: PostgreSQL (PostGIS), Redis
-- **Message Queue**: Apache Kafka / Amazon MSK
-- **Voice**: Twilio, OpenAI Whisper / AWS Transcribe, ElevenLabs / AWS Polly
-- **Cloud**: AWS (ECS Fargate, S3, RDS, Lambda, Bedrock)
-- **Monitoring**: CloudWatch, Prometheus, Grafana
+- 🛰️ **Real-Time Satellite Monitoring**: Crop health analysis using Sentinel Hub satellite imagery
+- 🌤️ **Weather Intelligence**: Live weather data and forecasts from OpenWeather API
+- 🤖 **AI-Powered Advisories**: Personalized recommendations using AWS Bedrock (Amazon Nova Lite)
+- 📞 **Voice Call Delivery**: Automated voice calls in Hindi/Telugu via Twilio
+- 🗣️ **Multi-Language Support**: Hindi and Telugu with easy expansion to more languages
+- 📊 **Analytics Dashboard**: Real-time monitoring and insights
+- ☁️ **Cloud-Native**: Fully deployed on AWS infrastructure
+- 🔄 **Auto-Monitoring**: Continuous crop health tracking with alerts
 
-### Provider Flexibility
+## 🏗️ Architecture
 
-KrishiMitra supports multiple AI/ML providers:
+### Technology Stack
 
-**Option 1: OpenAI + ElevenLabs (Default)**
-- LLM: OpenAI GPT-4
-- STT: OpenAI Whisper
-- TTS: ElevenLabs
-- Best for: Development, highest quality
+**Frontend**
+- React 18 with TypeScript
+- Material-UI (MUI) for components
+- React Router for navigation
+- Axios for API calls
+- Deployed on AWS S3 with static website hosting
 
-**Option 2: AWS Native Services**
-- LLM: AWS Bedrock (Claude v2)
-- STT: AWS Transcribe
-- TTS: AWS Polly
-- Best for: Production, cost optimization (38% savings)
+**Backend**
+- FastAPI (Python 3.11)
+- SQLite database (production-ready for prototype)
+- Pydantic for data validation
+- Uvicorn ASGI server
+- Deployed on AWS Elastic Beanstalk
 
-**Option 3: Hybrid (Recommended)**
-- LLM: AWS Bedrock
-- STT: OpenAI Whisper
-- TTS: ElevenLabs
-- Best for: Balance of cost and quality
+**AI & ML Services**
+- **LLM**: AWS Bedrock (Amazon Nova Lite in us-east-1)
+- **Satellite Data**: Sentinel Hub API
+- **Weather Data**: OpenWeather API
+- **Voice Calls**: Twilio
+- **Text-to-Speech**: Google TTS (gTTS) with Hindi/Telugu support
 
-See [docs/PROVIDER_SELECTION_GUIDE.md](docs/PROVIDER_SELECTION_GUIDE.md) for details.
+**AWS Services**
+- **Elastic Beanstalk**: Backend hosting (Python 3.11 on Amazon Linux 2023)
+- **S3**: Frontend hosting + audio file storage
+- **Bedrock**: AI-powered advisory generation
+- **IAM**: Access management and security
 
-## Project Structure
+### Deployment Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         AWS Cloud                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌──────────────────┐         ┌──────────────────┐          │
+│  │   S3 Bucket      │         │ Elastic Beanstalk│          │
+│  │   (Frontend)     │◄────────┤   (Backend API)  │          │
+│  │                  │         │                  │          │
+│  │  React + MUI     │         │  FastAPI + SQLite│          │
+│  └──────────────────┘         └────────┬─────────┘          │
+│                                        │                     │
+│                                        ▼                     │
+│                              ┌──────────────────┐            │
+│                              │  AWS Bedrock     │            │
+│                              │  (Nova Lite)     │            │
+│                              │  us-east-1       │            │
+│                              └──────────────────┘            │
+│                                                               │
+└───────────────────────────────┬───────────────────────────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+            ┌───────▼────────┐     ┌───────▼────────┐
+            │  Sentinel Hub  │     │  OpenWeather   │
+            │  (Satellite)   │     │  (Weather API) │
+            └────────────────┘     └────────────────┘
+                    │                       │
+                    └───────────┬───────────┘
+                                │
+                        ┌───────▼────────┐
+                        │     Twilio     │
+                        │  (Voice Calls) │
+                        └────────────────┘
+```
+
+## 📁 Project Structure
 
 ```
 krishimitra/
 ├── src/
-│   ├── api/                 # REST API endpoints
-│   ├── services/            # Core business services
-│   │   ├── data_ingestion/  # Satellite & weather data collection
-│   │   ├── monitoring/      # Crop health analysis
-│   │   ├── prediction/      # ML-based stress prediction
-│   │   ├── agents/          # Agentic AI system
-│   │   └── communication/   # Voice & chatbot services
-│   ├── models/              # Data models and schemas
-│   ├── utils/               # Utility functions
-│   └── config/              # Configuration management
-├── tests/                   # Unit and integration tests
-├── scripts/                 # Deployment and utility scripts
-├── infrastructure/          # IaC (Terraform/CloudFormation)
-├── docs/                    # Documentation
-├── requirements.md          # Project requirements
-├── design.md               # System design document
-└── tasks.md                # Implementation tasks
+│   ├── api/                    # REST API endpoints
+│   │   ├── advisories.py       # Advisory generation endpoints
+│   │   ├── farmers.py          # Farmer management
+│   │   ├── monitoring.py       # Crop monitoring endpoints
+│   │   └── voice.py            # Voice call webhooks
+│   ├── services/               # Core business services
+│   │   ├── agents/             # AI advisory agent
+│   │   ├── aws/                # AWS Bedrock integration
+│   │   ├── communication/      # Voice & TTS services
+│   │   ├── data_ingestion/     # Satellite & weather data
+│   │   └── monitoring/         # Crop health analysis
+│   ├── models/                 # SQLAlchemy data models
+│   ├── config/                 # Configuration & settings
+│   └── main.py                 # FastAPI application entry
+├── frontend/                   # React frontend application
+│   ├── src/
+│   │   ├── pages/              # React pages
+│   │   ├── components/         # Reusable components
+│   │   └── api/                # API client
+│   └── public/                 # Static assets
+├── scripts/                    # Utility scripts
+├── tests/                      # Test suites
+├── .elasticbeanstalk/          # EB deployment config
+├── requirements.txt            # Python dependencies
+├── Procfile                    # EB startup command
+└── README.md                   # This file
 ```
 
-## Getting Started
-
-For detailed setup instructions, see [SETUP.md](SETUP.md).
-
-### Quick Start - AWS Only (Recommended)
-
-If you want to use AWS services exclusively (Bedrock, Transcribe, Polly):
-
-**See [INSTALL_STEPS.md](INSTALL_STEPS.md) for detailed step-by-step instructions.**
-
-```powershell
-# 1. Create virtual environment
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-# 2. Install AWS-only dependencies (no OpenAI packages)
-pip install -r requirements-aws.txt
-
-# 3. Configure AWS
-aws configure
-
-# 4. Create S3 bucket
-aws s3 mb s3://krishimitra-audio-ap-south-1 --region ap-south-1
-
-# 5. Setup environment
-cp .env.example .env
-# Edit .env: Set LLM_PROVIDER=bedrock, USE_AWS_SERVICES=True
-
-# 6. Test AWS integration
-python scripts/test_aws_integration.py
-
-# 7. Run application
-uvicorn src.main:app --reload
-```
-
-### Quick Start - Full Setup (All Providers)
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Setup environment
-cp .env.example .env
-# Edit .env with your credentials
-
-# 3. Start infrastructure
-docker-compose up -d
-
-# 4. Initialize database
-alembic upgrade head
-
-# 5. Run application
-python src/main.py
-```
-
-Access the API at http://localhost:8000 and documentation at http://localhost:8000/api/v1/docs
-
-## Making Voice Calls
-
-KrishiMitra can make actual voice calls to farmers with AI-generated advisories in Hindi and other Indian languages.
-
-### Quick Start - Make Your First Call
-
-**See [START_HERE_VOICE_CALLS.md](START_HERE_VOICE_CALLS.md) for complete guide.**
-
-```powershell
-# 1. Verify setup
-python scripts/verify_call_setup.py
-
-# 2. Start server (Terminal 1)
-uvicorn src.main:app --reload
-
-# 3. Start ngrok (Terminal 2)
-ngrok http 8000
-
-# 4. Make call (Terminal 3)
-python scripts/make_real_call.py
-# Enter webhook URL: https://abc123.ngrok.io/voice/advisory
-```
-
-### Voice Call Documentation
-
-- [**START_HERE_VOICE_CALLS.md**](START_HERE_VOICE_CALLS.md) - **Complete setup guide**
-- [CALL_NOW_QUICKSTART.md](CALL_NOW_QUICKSTART.md) - 5-minute quickstart
-- [VOICE_CALL_FLOW.md](VOICE_CALL_FLOW.md) - System architecture
-- [MAKE_REAL_CALL_GUIDE.md](MAKE_REAL_CALL_GUIDE.md) - Detailed reference
-- [VOICE_CALL_ALTERNATIVES.md](VOICE_CALL_ALTERNATIVES.md) - Production options
-
-### Voice Call Features
-
-- ✓ Real voice calls via Twilio
-- ✓ Hindi and 10+ Indian languages
-- ✓ AI-generated advisories
-- ✓ Interactive (press 1 to replay)
-- ✓ AWS Polly text-to-speech
-- ✓ Call recording and logging
+## 🚀 Getting Started
 
 ### Prerequisites
 
-**For AWS-Only Setup**:
 - Python 3.11+
-- AWS CLI configured
-- AWS Account with Bedrock, Transcribe, Polly access
+- Node.js 18+ (for frontend development)
+- AWS Account with Bedrock access
+- Twilio Account (for voice calls)
+- API Keys: Sentinel Hub, OpenWeather
 
-**For Full Setup**:
-- Python 3.11+
-- Docker & Docker Compose
-- AWS Account
-- API Keys: OpenAI, Twilio, Satellite Provider, Weather Provider
+### Quick Start - Local Development
 
-# Initialize database
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd krishimitra
+
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\Activate.ps1
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Setup environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# 5. Initialize database
 python scripts/init_db.py
 
-# Run migrations
-alembic upgrade head
-
-# Start the application
-python src/main.py
-```
-
-### Development
-
-```bash
-# Run tests
-pytest tests/
-
-# Run with hot reload
+# 6. Run backend
 uvicorn src.main:app --reload
 
-# Run linting
-flake8 src/
-black src/
-
-# Run type checking
-mypy src/
+# 7. Run frontend (separate terminal)
+cd frontend
+npm install
+npm run dev
 ```
 
-## Documentation
+Access the application:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-- [**INSTALL_STEPS.md**](INSTALL_STEPS.md) - **Step-by-step AWS-only installation guide**
-- [Requirements](requirements.md) - Detailed system requirements
-- [Design](design.md) - System architecture and design
-- [Tasks](tasks.md) - Implementation roadmap
-- [AWS Deployment Guide](AWS_DEPLOYMENT.md) - Production deployment on AWS
-- [AWS Integration Summary](AWS_INTEGRATION_SUMMARY.md) - AWS services integration details
-- [AWS Quick Reference](docs/AWS_QUICK_REFERENCE.md) - Quick reference for AWS services
-- [Provider Selection Guide](docs/PROVIDER_SELECTION_GUIDE.md) - Choosing between OpenAI and AWS
-- [Testing Guide](TESTING_GUIDE.md) - Testing instructions
-- [Windows Setup](QUICKSTART_WINDOWS.md) - Quick start for Windows users
-- [AWS-Only Setup](QUICKSTART_AWS.md) - Quick start for AWS-only setup
+### Quick Start - Use Live Deployment
 
-## AWS Deployment
+Simply visit the live application:
+- **Frontend**: http://krishimitra-frontend.s3-website.ap-south-1.amazonaws.com
+- **API**: http://krishimitra-prod.eba-gz6myy8n.ap-south-1.elasticbeanstalk.com/docs
 
-KrishiMitra is designed for AWS deployment with full support for AWS native services:
+Test farmer: +918095666788 (Hindi)
 
-```bash
-# Quick start with AWS services
-export USE_AWS_SERVICES=True
-export LLM_PROVIDER=bedrock
-export AWS_REGION=ap-south-1
+## 📞 Voice Call Feature
 
-# Deploy infrastructure
-cd infrastructure/terraform
-terraform init
-terraform apply
+KrishiMitra delivers AI-generated advisories via voice calls in Hindi and Telugu.
 
-# Deploy application
-docker build -t krishimitra .
-docker push <ecr-repo>/krishimitra:latest
-```
+### How It Works
 
-See [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) for complete deployment instructions.
+1. **Generate Advisory**: System analyzes satellite data, weather, and crop conditions
+2. **AI Processing**: AWS Bedrock generates personalized recommendations
+3. **Voice Synthesis**: Google TTS converts text to speech in local language
+4. **Call Delivery**: Twilio initiates voice call to farmer's phone
+5. **Interactive**: Farmer can replay advisory by pressing 1
 
-### Cost Optimization
+### Making a Test Call
 
-Using AWS native services reduces costs by 38%:
-- OpenAI + ElevenLabs: ~$600/month (10k farmers)
-- AWS Bedrock + Transcribe + Polly: ~$370/month (10k farmers)
+From the live frontend:
+1. Visit http://krishimitra-frontend.s3-website.ap-south-1.amazonaws.com
+2. Click on a farmer (e.g., +918095666788)
+3. Click "Generate Advisory" button
+4. Click "Make Voice Call" button
+5. Farmer receives call with advisory in Hindi
 
-See [AWS_INTEGRATION_SUMMARY.md](AWS_INTEGRATION_SUMMARY.md) for detailed cost analysis.
+### Voice Call Features
 
-## Success Metrics
+- ✅ Real voice calls via Twilio
+- ✅ Hindi and Telugu language support
+- ✅ AI-generated personalized advisories
+- ✅ Interactive replay option
+- ✅ Call recording and logging
+- ✅ Fallback templates if AI unavailable
 
-- **System Uptime**: 99.5%+
-- **Response Latency**: <2 seconds (speech-to-speech)
-- **Prediction Accuracy**: 85%+
-- **Farmer Satisfaction**: 4.5+/5
-- **Cost per Farmer**: <$1.00/month
+## 📚 Documentation
 
-## Contributing
+### Essential Guides
+- [**AWS_DEPLOYMENT_STATUS.md**](AWS_DEPLOYMENT_STATUS.md) - Current deployment status and URLs
+- [**DEMO_VIDEO_GUIDE.md**](DEMO_VIDEO_GUIDE.md) - How to create a demo video
+- [**TESTING_GUIDE.md**](TESTING_GUIDE.md) - Testing instructions
+- [**ENABLE_BEDROCK_GUIDE.md**](ENABLE_BEDROCK_GUIDE.md) - AWS Bedrock setup
+- [**TEST_DEPLOYED_APP.md**](TEST_DEPLOYED_APP.md) - Testing the live deployment
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+### Quick References
+- [**QUICK_START.md**](QUICK_START.md) - Quick start guide
+- [**RUN_ME.md**](RUN_ME.md) - How to run locally
+- [**STARTUP_SCRIPTS_README.md**](STARTUP_SCRIPTS_README.md) - Startup scripts guide
 
-## License
+### Deployment Scripts
+- `deploy_to_aws.ps1` - Deploy backend to Elastic Beanstalk
+- `deploy_frontend_simple.ps1` - Deploy frontend to S3
+- `start_all.ps1` - Start all services locally
+- `stop_all.ps1` - Stop all services
+
+## 🌟 Key Features Demonstrated
+
+### 1. Farmer Management
+- Register farmers with phone numbers and language preferences
+- Manage farm plots with geo-coordinates
+- Track crop types and cultivation areas
+
+### 2. AI-Powered Advisories
+- Real-time satellite imagery analysis
+- Weather-based recommendations
+- Crop-specific advice in local languages
+- Irrigation and fertilizer guidance
+
+### 3. Voice Call Delivery
+- Automated voice calls via Twilio
+- Text-to-speech in Hindi/Telugu
+- Interactive replay functionality
+- Call status tracking
+
+### 4. Monitoring Dashboard
+- Real-time crop health monitoring
+- Weather alerts and forecasts
+- Advisory history and analytics
+- System performance metrics
+
+## 🎯 Production Deployment
+
+### Current Status
+- ✅ Backend: Deployed on AWS Elastic Beanstalk
+- ✅ Frontend: Deployed on AWS S3
+- ✅ Database: SQLite (suitable for prototype)
+- ✅ AI: AWS Bedrock (Amazon Nova Lite)
+- ✅ Voice: Twilio integration active
+- ✅ Monitoring: CloudWatch enabled
+
+### Environment Details
+- **Region**: ap-south-1 (Mumbai)
+- **Backend URL**: http://krishimitra-prod.eba-gz6myy8n.ap-south-1.elasticbeanstalk.com
+- **Frontend URL**: http://krishimitra-frontend.s3-website.ap-south-1.amazonaws.com
+- **Platform**: Python 3.11 on Amazon Linux 2023
+- **Instance**: t3.medium
+
+### Known Limitations
+- SQLite database (data resets on deployment)
+- Bedrock daily quota limits
+- Hindi/Telugu only (expandable to more languages)
+- Prototype-level error handling
+
+## 💡 Future Enhancements
+
+- 🔄 Migrate to Amazon RDS for persistent database
+- 🌍 Add support for 10+ Indian languages
+- 📱 Mobile app for farmers
+- 🔬 Computer vision for pest detection
+- 🤝 Integration with government schemes
+- 📊 Advanced analytics and ML models
+- 🔔 SMS and WhatsApp notifications
+- 🌐 Multi-region deployment
+
+
+## 📊 Technical Achievements
+
+- ✅ Full-stack application deployed on AWS
+- ✅ AI-powered advisory generation with AWS Bedrock
+- ✅ Real-time satellite data integration
+- ✅ Multi-language support (Hindi/Telugu)
+- ✅ Voice call delivery system
+- ✅ Responsive React frontend
+- ✅ RESTful API with FastAPI
+- ✅ Production-ready deployment
+
+## 🏆 Hackathon Highlights
+
+**Built for**: AWS AI for Bharat Hackathon 2026
+
+**Key Differentiators**:
+- 🌾 Addresses real agricultural challenges in India
+- 🗣️ Language accessibility for non-English speakers
+- 📞 Voice-first approach for low-literacy users
+- ☁️ Fully leverages AWS services
+- 🚀 Production-ready and scalable
+- 💰 Cost-effective solution
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Team
+## 👥 Team
 
-- Product Manager
-- Backend Developers (3-4)
-- ML Engineers (2)
-- DevOps Engineer
-- QA Engineers (2)
-- Agricultural Domain Expert
+Built with ❤️ for Indian farmers
 
-## Contact
+## 📧 Contact
 
-For questions or support, please contact: support@krishimitra.com
+For questions or support, please open an issue on GitHub.
 
 ---
 
-**Status**: Phase 1 - Foundation & Infrastructure (In Progress)
-**Version**: 0.1.0
-**Last Updated**: 2024-01-15
+**Status**: ✅ Production Deployed
+**Version**: 1.0.0
+**Last Updated**: March 8, 2026
+**Deployed**: AWS ap-south-1 (Mumbai)
