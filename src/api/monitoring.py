@@ -77,13 +77,8 @@ async def update_monitoring_settings(settings: MonitoringSettings):
 async def trigger_immediate_check():
     """Trigger an immediate check of all farmers"""
     try:
-        if not auto_monitor_service.is_running:
-            raise HTTPException(
-                status_code=400,
-                detail="Monitoring service is not running. Start it first."
-            )
-        
-        # Trigger immediate check by calling the check method
+        # Allow check even if monitoring is not running
+        # This is useful for manual checks
         await auto_monitor_service._check_all_farmers()
         
         return {
@@ -91,8 +86,6 @@ async def trigger_immediate_check():
             "message": "Immediate check completed",
             "monitoring_status": auto_monitor_service.get_status()
         }
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Failed to trigger check: {e}")
         raise HTTPException(status_code=500, detail=str(e))
