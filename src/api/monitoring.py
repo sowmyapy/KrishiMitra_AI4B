@@ -2,9 +2,9 @@
 Monitoring API endpoints
 """
 import logging
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional
 
 from src.services.monitoring import auto_monitor_service
 
@@ -15,9 +15,9 @@ router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 
 class MonitoringSettings(BaseModel):
     """Monitoring settings model"""
-    check_interval: Optional[int] = None
-    risk_threshold: Optional[float] = None
-    call_threshold: Optional[float] = None
+    check_interval: int | None = None
+    risk_threshold: float | None = None
+    call_threshold: float | None = None
 
 
 @router.post("/start")
@@ -62,7 +62,7 @@ async def update_monitoring_settings(settings: MonitoringSettings):
     try:
         settings_dict = settings.dict(exclude_none=True)
         auto_monitor_service.update_settings(settings_dict)
-        
+
         return {
             "status": "success",
             "message": "Settings updated",
@@ -80,7 +80,7 @@ async def trigger_immediate_check():
         # Allow check even if monitoring is not running
         # This is useful for manual checks
         await auto_monitor_service._check_all_farmers()
-        
+
         return {
             "status": "success",
             "message": "Immediate check completed",
@@ -104,7 +104,7 @@ async def reset_statistics():
             "calls_made": 0,
             "errors": 0
         }
-        
+
         return {
             "status": "success",
             "message": "Statistics reset",

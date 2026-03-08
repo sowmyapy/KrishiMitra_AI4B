@@ -1,9 +1,9 @@
 """
 Check system requirements for KrishiMitra
 """
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 
@@ -12,7 +12,7 @@ def check_python_version():
     version = sys.version_info
     required = (3, 10)
     recommended = (3, 11)
-    
+
     if version >= recommended:
         print(f"✓ Python {version.major}.{version.minor}.{version.micro}")
         return True
@@ -78,30 +78,30 @@ def main():
     print("KrishiMitra - System Requirements Check")
     print("=" * 50)
     print()
-    
+
     checks = []
-    
+
     print("Python:")
     checks.append(check_python_version())
     print()
-    
+
     print("Virtual Environment:")
     check_venv()  # Warning only, not required
     print()
-    
+
     print("Required Tools:")
     checks.append(check_command("git", "Git"))
     checks.append(check_docker())
     print()
-    
+
     print("Optional Tools:")
     check_command("make", "Make")
     print()
-    
+
     print("Configuration:")
     checks.append(check_env_file())
     print()
-    
+
     print("=" * 50)
     if all(checks):
         print("✓ All required checks passed!")

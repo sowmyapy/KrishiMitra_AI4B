@@ -1,17 +1,17 @@
 """
 KrishiMitra - Main application entry point
 """
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-import logging
-
-from src.config.settings import settings
-from src.config.logging_config import setup_logging
-from src.config.database import engine, Base
 
 # Import API routers
-from src.api import farmers, advisories, voice, monitoring, audio
+from src.api import advisories, audio, farmers, monitoring, voice
+from src.config.database import Base, engine
+from src.config.logging_config import setup_logging
+from src.config.settings import settings
 
 # Setup logging
 setup_logging()
@@ -24,15 +24,15 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Environment: {settings.environment}")
-    
+
     # Create database tables
     # For SQLite prototype, create tables on startup
     # In production with PostgreSQL, use Alembic migrations instead
     logger.info("Creating database tables...")
     Base.metadata.create_all(bind=engine)
-    
+
     yield
-    
+
     # Shutdown
     logger.info(f"Shutting down {settings.app_name}")
 
@@ -88,7 +88,7 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "src.main:app",
         host=settings.api_host,

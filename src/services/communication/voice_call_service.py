@@ -2,11 +2,10 @@
 Voice call service using Twilio
 """
 import logging
-from typing import Dict, Optional, Callable
 from datetime import datetime
-from pathlib import Path
+
 from twilio.rest import Client
-from twilio.twiml.voice_response import VoiceResponse, Gather
+from twilio.twiml.voice_response import Gather, VoiceResponse
 
 from src.config.settings import settings
 from src.services.communication.speech_to_text import SpeechToTextService
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class VoiceCallService:
     """Service for managing voice calls"""
-    
+
     # Call statuses
     STATUS_INITIATED = "initiated"
     STATUS_RINGING = "ringing"
@@ -26,7 +25,7 @@ class VoiceCallService:
     STATUS_FAILED = "failed"
     STATUS_NO_ANSWER = "no-answer"
     STATUS_BUSY = "busy"
-    
+
     def __init__(self):
         """Initialize voice call service"""
         self.client = Client(
@@ -36,25 +35,25 @@ class VoiceCallService:
         self.from_number = settings.twilio_phone_number
         self.stt_service = SpeechToTextService()
         self.tts_service = TextToSpeechService()
-        
+
         logger.info("Voice call service initialized")
-    
+
     async def initiate_call(
         self,
         to_number: str,
         callback_url: str,
         farmer_id: str,
         call_type: str = "advisory"
-    ) -> Dict:
+    ) -> dict:
         """
         Initiate outbound call
-        
+
         Args:
             to_number: Farmer's phone number
             callback_url: Webhook URL for call events
             farmer_id: Farmer ID
             call_type: Type of call (advisory, chatbot, etc.)
-        
+
         Returns:
             Call information
         """
@@ -68,7 +67,7 @@ class VoiceCallService:
                 record=True,
                 recording_status_callback=f"{callback_url}/recording"
             )
-            
+
             result = {
                 "call_sid": call.sid,
                 "to_number": to_number,
@@ -78,14 +77,14 @@ class VoiceCallService:
                 "call_type": call_type,
                 "initiated_at": datetime.utcnow().isoformat()
             }
-            
+
             logger.info(f"Initiated call {call.sid} to {to_number}")
             return result
-            
+
         except Exception as e:
             logger.error(f"Failed to initiate call: {e}")
             raise
-    
+
     def generate_advisory_twiml(
             self,
             advisory_text: str,
@@ -142,7 +141,7 @@ class VoiceCallService:
 
             return str(response)
 
-    
+
     def generate_chatbot_twiml(
         self,
         initial_message: str,
@@ -151,20 +150,20 @@ class VoiceCallService:
     ) -> str:
         """
         Generate TwiML for chatbot interaction
-        
+
         Args:
             initial_message: Initial chatbot message
             language: Language code
             gather_url: URL to handle user input
-        
+
         Returns:
             TwiML XML string
         """
         response = VoiceResponse()
-        
+
         # Initial message
         response.say(initial_message, language=self._get_twilio_language(language))
-        
+
         # Gather speech input
         gather = Gather(
             input='speech',
@@ -174,40 +173,40 @@ class VoiceCallService:
             speech_timeout="auto",
             speech_model="phone_call"
         )
-        
+
         response.append(gather)
-        
+
         # If no input, prompt again
         response.say(
             "I didn't hear anything. Please speak after the beep.",
             language=self._get_twilio_language(language)
         )
         response.redirect(gather_url)
-        
+
         return str(response)
-    
+
     def generate_ivr_twiml(
         self,
-        menu_options: Dict[str, str],
+        menu_options: dict[str, str],
         language: str = "en"
     ) -> str:
         """
         Generate TwiML for IVR menu
-        
+
         Args:
             menu_options: Dict of digit -> option description
             language: Language code
-        
+
         Returns:
             TwiML XML string
         """
         response = VoiceResponse()
-        
+
         # Build menu prompt
         menu_text = "Please select an option. "
         for digit, option in menu_options.items():
             menu_text += f"Press {digit} for {option}. "
-        
+
         gather = Gather(
             num_digits=1,
             action="/voice/ivr/handle",
@@ -216,26 +215,26 @@ class VoiceCallService:
         )
         gather.say(menu_text, language=self._get_twilio_language(language))
         response.append(gather)
-        
+
         # If no input
         response.say("No input received. Goodbye.")
         response.hangup()
-        
+
         return str(response)
-    
-    async def get_call_status(self, call_sid: str) -> Dict:
+
+    async def get_call_status(self, call_sid: str) -> dict:
         """
         Get call status
-        
+
         Args:
             call_sid: Twilio call SID
-        
+
         Returns:
             Call status information
         """
         try:
             call = self.client.calls(call_sid).fetch()
-            
+
             return {
                 "call_sid": call.sid,
                 "status": call.status,
@@ -245,27 +244,27 @@ class VoiceCallService:
                 "direction": call.direction,
                 "answered_by": call.answered_by
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to get call status: {e}")
             raise
-    
+
     async def get_recording(self, recording_sid: str) -> bytes:
         """
         Get call recording
-        
+
         Args:
             recording_sid: Twilio recording SID
-        
+
         Returns:
             Recording audio bytes
         """
         try:
             recording = self.client.recordings(recording_sid).fetch()
-            
+
             # Download recording
             recording_url = f"https://api.twilio.com{recording.uri.replace('.json', '.mp3')}"
-            
+
             import httpx
             async with httpx.AsyncClient() as client:
                 response = await client.get(
@@ -274,26 +273,26 @@ class VoiceCallService:
                 )
                 response.raise_for_status()
                 return response.content
-            
+
         except Exception as e:
             logger.error(f"Failed to get recording: {e}")
             raise
-    
+
     async def hangup_call(self, call_sid: str):
         """
         Hangup active call
-        
+
         Args:
             call_sid: Twilio call SID
         """
         try:
             self.client.calls(call_sid).update(status='completed')
             logger.info(f"Hung up call {call_sid}")
-            
+
         except Exception as e:
             logger.error(f"Failed to hangup call: {e}")
             raise
-    
+
     def _get_twilio_language(self, language_code: str) -> str:
         """Map language code to Twilio language"""
         mapping = {
@@ -309,7 +308,7 @@ class VoiceCallService:
             "en": "en-IN"
         }
         return mapping.get(language_code, "en-IN")
-    
+
     def _get_polly_voice(self, language_code: str) -> str:
         """
         Get Amazon Polly voice for language
@@ -328,7 +327,7 @@ class VoiceCallService:
             "en": "Raveena"     # English (India) - Female
         }
         return f"Polly.{voice_mapping.get(language_code, 'Raveena')}"
-    
+
     def _get_polly_voice(self, language_code: str) -> str:
         """
         Get Amazon Polly voice for language
@@ -347,7 +346,7 @@ class VoiceCallService:
             "en": "Raveena"     # English (India) - Female
         }
         return f"Polly.{voice_mapping.get(language_code, 'Raveena')}"
-    
+
     def _get_greeting(self, language: str) -> str:
         """Get greeting in language"""
         greetings = {
@@ -357,7 +356,7 @@ class VoiceCallService:
             "te": "నమస్కారం, ఇది కృషి మిత్ర.",
         }
         return greetings.get(language, greetings["en"])
-    
+
     def _get_goodbye(self, language: str) -> str:
         """Get goodbye in language"""
         goodbyes = {
@@ -367,7 +366,7 @@ class VoiceCallService:
             "te": "ధన్యవాదాలు. నమస్కారం.",
         }
         return goodbyes.get(language, goodbyes["en"])
-    
+
     def _get_replay_prompt(self, language: str) -> str:
         """Get replay prompt in language"""
         prompts = {
@@ -377,28 +376,29 @@ class VoiceCallService:
             "te": "సందేశాన్ని మళ్లీ వినడానికి 1 నొక్కండి.",
         }
         return prompts.get(language, prompts["en"])
-    
+
     async def check_calling_hours(self, timezone: str) -> bool:
         """
         Check if current time is appropriate for calling
-        
+
         Args:
             timezone: Farmer's timezone
-        
+
         Returns:
             True if appropriate time to call
         """
         from datetime import datetime
+
         import pytz
-        
+
         try:
             tz = pytz.timezone(timezone)
             local_time = datetime.now(tz)
             hour = local_time.hour
-            
+
             # Appropriate calling hours: 9 AM to 7 PM
             return 9 <= hour < 19
-            
+
         except Exception as e:
             logger.error(f"Failed to check calling hours: {e}")
             return True  # Default to allowing call

@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
+
 from .settings import settings
 
 # Create database engine
@@ -27,7 +28,7 @@ Base = declarative_base()
 def get_db():
     """
     Dependency for getting database session
-    
+
     Usage:
         @app.get("/farmers")
         def get_farmers(db: Session = Depends(get_db)):

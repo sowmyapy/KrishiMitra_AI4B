@@ -2,9 +2,10 @@
 Audio file serving for voice calls
 """
 import logging
+from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -16,16 +17,16 @@ async def serve_audio(filename: str):
     """Serve audio file for Twilio playback"""
     try:
         audio_path = Path("audio_cache") / filename
-        
+
         if not audio_path.exists():
             raise HTTPException(status_code=404, detail="Audio file not found")
-        
+
         return FileResponse(
             path=str(audio_path),
             media_type="audio/mpeg",
             filename=filename
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:

@@ -1,10 +1,11 @@
 """
 Pydantic schemas for API requests and responses
 """
-from typing import List, Optional, Dict, Any
-from datetime import datetime, date
-from pydantic import BaseModel, Field, validator
+from datetime import date, datetime
+from typing import Any
 from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 # Authentication schemas
@@ -31,7 +32,7 @@ class FarmerResponse(BaseModel):
     preferred_language: str
     timezone: str
     registration_date: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -41,19 +42,19 @@ class FarmPlotCreate(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     area_hectares: float = Field(..., gt=0)
-    crop_types: List[str]
-    planting_date: Optional[date] = None
-    expected_harvest_date: Optional[date] = None
+    crop_types: list[str]
+    planting_date: date | None = None
+    expected_harvest_date: date | None = None
 
 
 class FarmPlotResponse(BaseModel):
     plot_id: UUID
     farmer_id: UUID
     area_hectares: float
-    crop_types: List[str]
-    planting_date: Optional[date]
-    expected_harvest_date: Optional[date]
-    
+    crop_types: list[str]
+    planting_date: date | None
+    expected_harvest_date: date | None
+
     class Config:
         from_attributes = True
 
@@ -68,7 +69,7 @@ class AdvisoryResponse(BaseModel):
     actions: list
     created_at: datetime
     expires_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -88,10 +89,10 @@ class CallRecordResponse(BaseModel):
     farmer_id: UUID
     call_type: str
     status: str
-    duration_seconds: Optional[int]
+    duration_seconds: int | None
     initiated_at: datetime
-    completed_at: Optional[datetime]
-    
+    completed_at: datetime | None
+
     class Config:
         from_attributes = True
 
@@ -102,9 +103,9 @@ class ChatbotSessionResponse(BaseModel):
     farmer_id: UUID
     language: str
     started_at: datetime
-    ended_at: Optional[datetime]
+    ended_at: datetime | None
     turn_count: int
-    
+
     class Config:
         from_attributes = True
 
@@ -113,7 +114,7 @@ class ConversationTurnCreate(BaseModel):
     session_id: UUID
     user_input: str
     bot_response: str
-    intent: Optional[str] = None
+    intent: str | None = None
 
 
 # Health check schema
@@ -126,13 +127,13 @@ class HealthCheck(BaseModel):
 # Error schema
 class ErrorResponse(BaseModel):
     detail: str
-    error_code: Optional[str] = None
+    error_code: str | None = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
 # Pagination schema
 class PaginatedResponse(BaseModel):
-    items: List[Any]
+    items: list[Any]
     total: int
     page: int
     page_size: int
@@ -147,7 +148,7 @@ class CropHealthIndicatorResponse(BaseModel):
     ndvi_std: float
     moisture_level: float
     timestamp: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -160,7 +161,7 @@ class StressPredictionResponse(BaseModel):
     risk_score: float
     confidence: float
     predicted_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -169,13 +170,13 @@ class StressPredictionResponse(BaseModel):
 class VoiceCallRequest(BaseModel):
     farmer_id: UUID
     call_type: str = Field(..., pattern="^(advisory|chatbot)$")
-    message: Optional[str] = None
-    language: Optional[str] = "en"
+    message: str | None = None
+    language: str | None = "en"
 
 
 # Chatbot message schema
 class ChatbotMessage(BaseModel):
-    session_id: Optional[str] = None
+    session_id: str | None = None
     farmer_id: UUID
     message: str
     language: str = "en"

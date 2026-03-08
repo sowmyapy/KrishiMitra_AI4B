@@ -1,10 +1,11 @@
 """
 Kafka producer for data ingestion events
 """
-import logging
 import json
-from typing import Dict, Any
+import logging
 from datetime import datetime
+from typing import Any
+
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
@@ -15,14 +16,14 @@ logger = logging.getLogger(__name__)
 
 class DataEventProducer:
     """Producer for publishing data ingestion events to Kafka"""
-    
+
     # Topic names
     TOPIC_SATELLITE_DATA = "satellite-data"
     TOPIC_WEATHER_DATA = "weather-data"
     TOPIC_CROP_INDICATORS = "crop-indicators"
     TOPIC_STRESS_ALERTS = "stress-alerts"
     TOPIC_NOTIFICATIONS = "notifications"
-    
+
     def __init__(self):
         self.producer = KafkaProducer(
             bootstrap_servers=settings.kafka_bootstrap_servers.split(','),
@@ -33,15 +34,15 @@ class DataEventProducer:
             max_in_flight_requests_per_connection=1,  # Ensure ordering
         )
         logger.info("Kafka producer initialized")
-    
-    def _add_metadata(self, data: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _add_metadata(self, data: dict[str, Any]) -> dict[str, Any]:
         """Add common metadata to event"""
         return {
             **data,
             "event_timestamp": datetime.utcnow().isoformat(),
             "producer": "data-ingestion-service"
         }
-    
+
     async def publish_satellite_data_event(
         self,
         tile_key: str,
@@ -51,7 +52,7 @@ class DataEventProducer:
     ) -> None:
         """
         Publish satellite data ingestion event
-        
+
         Args:
             tile_key: S3 key of stored tile
             bbox: Bounding box
@@ -65,7 +66,7 @@ class DataEventProducer:
             "date_from": date_from.isoformat(),
             "date_to": date_to.isoformat()
         })
-        
+
         try:
             future = self.producer.send(
                 self.TOPIC_SATELLITE_DATA,
@@ -78,16 +79,16 @@ class DataEventProducer:
         except KafkaError as e:
             logger.error(f"Failed to publish satellite data event: {e}")
             raise
-    
+
     async def publish_weather_data_event(
         self,
-        location: Dict[str, float],
-        weather_data: Dict[str, Any],
+        location: dict[str, float],
+        weather_data: dict[str, Any],
         data_type: str = "current"
     ) -> None:
         """
         Publish weather data ingestion event
-        
+
         Args:
             location: Location dict with lat/lon
             weather_data: Weather data
@@ -99,9 +100,9 @@ class DataEventProducer:
             "data_type": data_type,
             "weather_data": weather_data
         })
-        
+
         key = f"{location['lat']}_{location['lon']}"
-        
+
         try:
             future = self.producer.send(
                 self.TOPIC_WEATHER_DATA,
@@ -113,15 +114,15 @@ class DataEventProducer:
         except KafkaError as e:
             logger.error(f"Failed to publish weather data event: {e}")
             raise
-    
+
     async def publish_crop_indicator_event(
         self,
         plot_id: str,
-        indicators: Dict[str, Any]
+        indicators: dict[str, Any]
     ) -> None:
         """
         Publish crop health indicator event
-        
+
         Args:
             plot_id: Farm plot ID
             indicators: Crop health indicators
@@ -131,7 +132,7 @@ class DataEventProducer:
             "plot_id": plot_id,
             "indicators": indicators
         })
-        
+
         try:
             future = self.producer.send(
                 self.TOPIC_CROP_INDICATORS,
@@ -143,16 +144,16 @@ class DataEventProducer:
         except KafkaError as e:
             logger.error(f"Failed to publish crop indicator event: {e}")
             raise
-    
+
     async def publish_stress_alert_event(
         self,
         farmer_id: str,
         plot_id: str,
-        alert_data: Dict[str, Any]
+        alert_data: dict[str, Any]
     ) -> None:
         """
         Publish stress alert event
-        
+
         Args:
             farmer_id: Farmer ID
             plot_id: Farm plot ID
@@ -164,7 +165,7 @@ class DataEventProducer:
             "plot_id": plot_id,
             "alert_data": alert_data
         })
-        
+
         try:
             future = self.producer.send(
                 self.TOPIC_STRESS_ALERTS,
@@ -176,16 +177,16 @@ class DataEventProducer:
         except KafkaError as e:
             logger.error(f"Failed to publish stress alert event: {e}")
             raise
-    
+
     async def publish_notification_event(
         self,
         farmer_id: str,
         notification_type: str,
-        notification_data: Dict[str, Any]
+        notification_data: dict[str, Any]
     ) -> None:
         """
         Publish notification event
-        
+
         Args:
             farmer_id: Farmer ID
             notification_type: Type of notification (call, sms, etc.)
@@ -197,7 +198,7 @@ class DataEventProducer:
             "notification_type": notification_type,
             "notification_data": notification_data
         })
-        
+
         try:
             future = self.producer.send(
                 self.TOPIC_NOTIFICATIONS,
@@ -209,7 +210,7 @@ class DataEventProducer:
         except KafkaError as e:
             logger.error(f"Failed to publish notification event: {e}")
             raise
-    
+
     def close(self):
         """Close producer and flush pending messages"""
         self.producer.flush()

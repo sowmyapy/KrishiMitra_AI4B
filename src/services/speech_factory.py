@@ -2,7 +2,7 @@
 Speech Service Factory - Provides unified interface for STT and TTS providers
 """
 import logging
-from typing import Protocol, Dict, Optional
+from typing import Protocol
 
 from src.config.settings import settings
 
@@ -11,40 +11,40 @@ logger = logging.getLogger(__name__)
 
 class STTProvider(Protocol):
     """Protocol for Speech-to-Text providers"""
-    
+
     async def transcribe(
         self,
         audio_data: bytes,
-        language: Optional[str] = None,
+        language: str | None = None,
         format: str = "mp3"
-    ) -> Dict:
+    ) -> dict:
         """Transcribe audio to text"""
         ...
-    
+
     async def detect_language(self, audio_data: bytes) -> str:
         """Detect language from audio"""
         ...
-    
+
     async def transcribe_with_timestamps(
         self,
         audio_data: bytes,
-        language: Optional[str] = None
-    ) -> Dict:
+        language: str | None = None
+    ) -> dict:
         """Transcribe with word-level timestamps"""
         ...
-    
+
     def validate_language(self, language_code: str) -> bool:
         """Check if language is supported"""
         ...
-    
-    def get_supported_languages(self) -> Dict[str, str]:
+
+    def get_supported_languages(self) -> dict[str, str]:
         """Get list of supported languages"""
         ...
 
 
 class TTSProvider(Protocol):
     """Protocol for Text-to-Speech providers"""
-    
+
     async def synthesize(
         self,
         text: str,
@@ -54,7 +54,7 @@ class TTSProvider(Protocol):
     ) -> bytes:
         """Convert text to speech"""
         ...
-    
+
     async def synthesize_streaming(
         self,
         text: str,
@@ -63,11 +63,11 @@ class TTSProvider(Protocol):
     ):
         """Stream audio generation"""
         ...
-    
+
     async def optimize_for_agriculture(self, text: str) -> str:
         """Optimize text for agricultural context"""
         ...
-    
+
     async def synthesize_with_ssml(
         self,
         ssml_text: str,
@@ -75,15 +75,15 @@ class TTSProvider(Protocol):
     ) -> bytes:
         """Synthesize with SSML markup"""
         ...
-    
+
     def clear_cache(self):
         """Clear audio cache"""
         ...
-    
+
     def get_cache_size(self) -> int:
         """Get number of cached items"""
         ...
-    
+
     async def preload_common_phrases(self, language: str):
         """Preload common phrases"""
         ...
@@ -91,78 +91,78 @@ class TTSProvider(Protocol):
 
 class WhisperSTTProvider:
     """OpenAI Whisper STT provider"""
-    
+
     def __init__(self):
         from src.services.communication.speech_to_text import SpeechToTextService
         self.service = SpeechToTextService()
         logger.info("Using OpenAI Whisper for STT")
-    
+
     async def transcribe(
         self,
         audio_data: bytes,
-        language: Optional[str] = None,
+        language: str | None = None,
         format: str = "mp3"
-    ) -> Dict:
+    ) -> dict:
         return await self.service.transcribe(audio_data, language, format)
-    
+
     async def detect_language(self, audio_data: bytes) -> str:
         return await self.service.detect_language(audio_data)
-    
+
     async def transcribe_with_timestamps(
         self,
         audio_data: bytes,
-        language: Optional[str] = None
-    ) -> Dict:
+        language: str | None = None
+    ) -> dict:
         return await self.service.transcribe_with_timestamps(audio_data, language)
-    
+
     def validate_language(self, language_code: str) -> bool:
         return self.service.validate_language(language_code)
-    
-    def get_supported_languages(self) -> Dict[str, str]:
+
+    def get_supported_languages(self) -> dict[str, str]:
         return self.service.get_supported_languages()
 
 
 class TranscribeSTTProvider:
     """AWS Transcribe STT provider"""
-    
+
     def __init__(self):
         from src.services.aws.transcribe_client import TranscribeClient
         self.service = TranscribeClient()
         logger.info("Using AWS Transcribe for STT")
-    
+
     async def transcribe(
         self,
         audio_data: bytes,
-        language: Optional[str] = None,
+        language: str | None = None,
         format: str = "mp3"
-    ) -> Dict:
+    ) -> dict:
         return await self.service.transcribe(audio_data, language, format)
-    
+
     async def detect_language(self, audio_data: bytes) -> str:
         return await self.service.detect_language(audio_data)
-    
+
     async def transcribe_with_timestamps(
         self,
         audio_data: bytes,
-        language: Optional[str] = None
-    ) -> Dict:
+        language: str | None = None
+    ) -> dict:
         return await self.service.transcribe_with_timestamps(audio_data, language)
-    
+
     def validate_language(self, language_code: str) -> bool:
         return self.service.validate_language(language_code)
-    
-    def get_supported_languages(self) -> Dict[str, str]:
+
+    def get_supported_languages(self) -> dict[str, str]:
         return self.service.get_supported_languages()
 
 
 class ElevenLabsTTSProvider:
     """ElevenLabs TTS provider"""
-    
+
     def __init__(self):
         from src.services.communication.text_to_speech import TextToSpeechService
         self.service = TextToSpeechService()
         logger.info("Using ElevenLabs for TTS")
-    
+
     async def synthesize(
         self,
         text: str,
@@ -171,7 +171,7 @@ class ElevenLabsTTSProvider:
         optimize_streaming: bool = False
     ) -> bytes:
         return await self.service.synthesize(text, language, voice_gender, optimize_streaming)
-    
+
     async def synthesize_streaming(
         self,
         text: str,
@@ -180,35 +180,35 @@ class ElevenLabsTTSProvider:
     ):
         async for chunk in self.service.synthesize_streaming(text, language, voice_gender):
             yield chunk
-    
+
     async def optimize_for_agriculture(self, text: str) -> str:
         return await self.service.optimize_for_agriculture(text)
-    
+
     async def synthesize_with_ssml(
         self,
         ssml_text: str,
         language: str = "en"
     ) -> bytes:
         return await self.service.synthesize_with_ssml(ssml_text, language)
-    
+
     def clear_cache(self):
         self.service.clear_cache()
-    
+
     def get_cache_size(self) -> int:
         return self.service.get_cache_size()
-    
+
     async def preload_common_phrases(self, language: str):
         await self.service.preload_common_phrases(language)
 
 
 class PollyTTSProvider:
     """AWS Polly TTS provider"""
-    
+
     def __init__(self):
         from src.services.aws.polly_client import PollyClient
         self.service = PollyClient()
         logger.info("Using AWS Polly for TTS")
-    
+
     async def synthesize(
         self,
         text: str,
@@ -217,7 +217,7 @@ class PollyTTSProvider:
         optimize_streaming: bool = False
     ) -> bytes:
         return await self.service.synthesize(text, language, voice_gender, optimize_streaming)
-    
+
     async def synthesize_streaming(
         self,
         text: str,
@@ -226,23 +226,23 @@ class PollyTTSProvider:
     ):
         async for chunk in self.service.synthesize_streaming(text, language, voice_gender):
             yield chunk
-    
+
     async def optimize_for_agriculture(self, text: str) -> str:
         return await self.service.optimize_for_agriculture(text)
-    
+
     async def synthesize_with_ssml(
         self,
         ssml_text: str,
         language: str = "en"
     ) -> bytes:
         return await self.service.synthesize_with_ssml(ssml_text, language)
-    
+
     def clear_cache(self):
         self.service.clear_cache()
-    
+
     def get_cache_size(self) -> int:
         return self.service.get_cache_size()
-    
+
     async def preload_common_phrases(self, language: str):
         await self.service.preload_common_phrases(language)
 
@@ -250,7 +250,7 @@ class PollyTTSProvider:
 def get_stt_provider() -> STTProvider:
     """
     Get STT provider based on configuration
-    
+
     Returns:
         STT provider instance
     """
@@ -263,7 +263,7 @@ def get_stt_provider() -> STTProvider:
 def get_tts_provider() -> TTSProvider:
     """
     Get TTS provider based on configuration
-    
+
     Returns:
         TTS provider instance
     """

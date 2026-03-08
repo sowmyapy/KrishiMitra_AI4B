@@ -1,15 +1,17 @@
 """
 Redis client configuration for caching
 """
-import redis
-from typing import Optional, Any
 import json
+from typing import Any
+
+import redis
+
 from .settings import settings
 
 
 class RedisClient:
     """Redis client wrapper for caching operations"""
-    
+
     def __init__(self):
         self.client = redis.from_url(
             settings.redis_url,
@@ -18,8 +20,8 @@ class RedisClient:
             socket_timeout=5,
         )
         self.default_ttl = settings.redis_cache_ttl
-    
-    def get(self, key: str) -> Optional[Any]:
+
+    def get(self, key: str) -> Any | None:
         """Get value from cache"""
         try:
             value = self.client.get(key)
@@ -29,8 +31,8 @@ class RedisClient:
         except Exception as e:
             print(f"Redis GET error: {e}")
             return None
-    
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+
+    def set(self, key: str, value: Any, ttl: int | None = None) -> bool:
         """Set value in cache with TTL"""
         try:
             ttl = ttl or self.default_ttl
@@ -39,7 +41,7 @@ class RedisClient:
         except Exception as e:
             print(f"Redis SET error: {e}")
             return False
-    
+
     def delete(self, key: str) -> bool:
         """Delete key from cache"""
         try:
@@ -47,7 +49,7 @@ class RedisClient:
         except Exception as e:
             print(f"Redis DELETE error: {e}")
             return False
-    
+
     def exists(self, key: str) -> bool:
         """Check if key exists"""
         try:
@@ -55,7 +57,7 @@ class RedisClient:
         except Exception as e:
             print(f"Redis EXISTS error: {e}")
             return False
-    
+
     def increment(self, key: str, amount: int = 1) -> int:
         """Increment counter"""
         try:
@@ -63,7 +65,7 @@ class RedisClient:
         except Exception as e:
             print(f"Redis INCR error: {e}")
             return 0
-    
+
     def expire(self, key: str, ttl: int) -> bool:
         """Set expiration on key"""
         try:
@@ -71,7 +73,7 @@ class RedisClient:
         except Exception as e:
             print(f"Redis EXPIRE error: {e}")
             return False
-    
+
     def flush_all(self) -> bool:
         """Flush all keys (use with caution!)"""
         try:

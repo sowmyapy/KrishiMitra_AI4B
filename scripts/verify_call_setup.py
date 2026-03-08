@@ -3,9 +3,9 @@
 Verify Voice Call Setup
 Checks all prerequisites before making a call
 """
+import os
 import sys
 from pathlib import Path
-import os
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -29,15 +29,14 @@ def check_twilio_credentials():
     print("\n" + "="*70)
     print("  Checking Twilio Credentials")
     print("="*70)
-    
-    from src.config.settings import settings
-    
+
+
     checks = [
         check_env_var("TWILIO_ACCOUNT_SID"),
         check_env_var("TWILIO_AUTH_TOKEN"),
         check_env_var("TWILIO_PHONE_NUMBER"),
     ]
-    
+
     if all(checks):
         print("\n  ✓ All Twilio credentials configured")
         return True
@@ -55,9 +54,9 @@ def check_server_running():
     print("\n" + "="*70)
     print("  Checking FastAPI Server")
     print("="*70)
-    
+
     import httpx
-    
+
     try:
         response = httpx.get("http://localhost:8000/health", timeout=2)
         if response.status_code == 200:
@@ -78,9 +77,9 @@ def check_voice_endpoints():
     print("\n" + "="*70)
     print("  Checking Voice Endpoints")
     print("="*70)
-    
+
     import httpx
-    
+
     try:
         # Check if voice endpoint exists (will return 405 for GET, but that's ok)
         response = httpx.get("http://localhost:8000/voice/advisory", timeout=2)
@@ -101,9 +100,9 @@ def check_ngrok():
     print("\n" + "="*70)
     print("  Checking ngrok")
     print("="*70)
-    
+
     import subprocess
-    
+
     try:
         # Try to run ngrok version
         result = subprocess.run(
@@ -138,9 +137,9 @@ def check_phone_number():
     print("\n" + "="*70)
     print("  Checking Phone Number")
     print("="*70)
-    
+
     phone = "+918095666788"
-    
+
     if phone.startswith("+") and len(phone) >= 10:
         print(f"  ✓ Phone number: {phone}")
         print("  ⚠ Make sure this number is verified in Twilio Console")
@@ -156,13 +155,13 @@ def check_aws_services():
     print("\n" + "="*70)
     print("  Checking AWS Services (Optional)")
     print("="*70)
-    
+
     checks = [
         check_env_var("AWS_ACCESS_KEY_ID", required=False),
         check_env_var("AWS_SECRET_ACCESS_KEY", required=False),
         check_env_var("AWS_REGION", required=False),
     ]
-    
+
     if all(checks):
         print("\n  ✓ AWS services configured")
         return True
@@ -177,15 +176,15 @@ def print_summary(results: dict):
     print("\n" + "="*70)
     print("  Setup Verification Summary")
     print("="*70)
-    
+
     all_passed = all(results.values())
-    
+
     for check, passed in results.items():
         status = "✓" if passed else "✗"
         print(f"  {status} {check}")
-    
+
     print("\n" + "="*70)
-    
+
     if all_passed:
         print("  ✓ ALL CHECKS PASSED - Ready to make calls!")
         print("="*70)
@@ -213,7 +212,7 @@ def main():
     print("="*70)
     print("  KrishiMitra - Voice Call Setup Verification")
     print("="*70)
-    
+
     results = {
         "Twilio Credentials": check_twilio_credentials(),
         "FastAPI Server": check_server_running(),
@@ -222,7 +221,7 @@ def main():
         "Phone Number": check_phone_number(),
         "AWS Services": check_aws_services(),
     }
-    
+
     return print_summary(results)
 
 

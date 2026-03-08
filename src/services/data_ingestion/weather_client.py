@@ -2,8 +2,8 @@
 Weather data client for OpenWeatherMap integration
 """
 import logging
-from typing import Dict, List, Optional
 from datetime import datetime
+
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 class WeatherClient:
     """Client for fetching weather data from OpenWeatherMap"""
-    
+
     def __init__(self):
         self.api_key = settings.openweathermap_api_key
         self.base_url = "https://api.openweathermap.org/data/2.5"
-    
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10)
@@ -27,14 +27,14 @@ class WeatherClient:
         self,
         lat: float,
         lon: float
-    ) -> Dict:
+    ) -> dict:
         """
         Fetch current weather for location
-        
+
         Args:
             lat: Latitude
             lon: Longitude
-        
+
         Returns:
             Weather data dictionary
         """
@@ -50,9 +50,9 @@ class WeatherClient:
             )
             response.raise_for_status()
             data = response.json()
-            
+
             logger.info(f"Fetched current weather for ({lat}, {lon})")
-            
+
             return {
                 "location": {"lat": lat, "lon": lon},
                 "timestamp": datetime.utcnow(),
@@ -68,7 +68,7 @@ class WeatherClient:
                 "rain_1h": data.get("rain", {}).get("1h", 0),
                 "rain_3h": data.get("rain", {}).get("3h", 0),
             }
-    
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10)
@@ -78,15 +78,15 @@ class WeatherClient:
         lat: float,
         lon: float,
         days: int = 5
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Fetch weather forecast for location
-        
+
         Args:
             lat: Latitude
             lon: Longitude
             days: Number of days (max 5 for free tier)
-        
+
         Returns:
             List of forecast data dictionaries
         """
@@ -103,7 +103,7 @@ class WeatherClient:
             )
             response.raise_for_status()
             data = response.json()
-            
+
             forecasts = []
             for item in data["list"]:
                 forecasts.append({
@@ -123,24 +123,24 @@ class WeatherClient:
                     "rain_3h": item.get("rain", {}).get("3h", 0),
                     "pop": item.get("pop", 0),  # Probability of precipitation
                 })
-            
+
             logger.info(f"Fetched {len(forecasts)} forecast entries for ({lat}, {lon})")
             return forecasts
-    
+
     async def fetch_historical_weather(
         self,
         lat: float,
         lon: float,
         timestamp: int
-    ) -> Dict:
+    ) -> dict:
         """
         Fetch historical weather data (requires paid plan)
-        
+
         Args:
             lat: Latitude
             lon: Longitude
             timestamp: Unix timestamp
-        
+
         Returns:
             Historical weather data dictionary
         """
@@ -157,7 +157,7 @@ class WeatherClient:
             )
             response.raise_for_status()
             data = response.json()
-            
+
             current = data["current"]
             return {
                 "location": {"lat": lat, "lon": lon},
@@ -173,19 +173,19 @@ class WeatherClient:
                 "weather_description": current["weather"][0]["description"],
                 "rain_1h": current.get("rain", {}).get("1h", 0),
             }
-    
+
     async def fetch_weather_alerts(
         self,
         lat: float,
         lon: float
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Fetch weather alerts for location
-        
+
         Args:
             lat: Latitude
             lon: Longitude
-        
+
         Returns:
             List of weather alerts
         """
@@ -201,7 +201,7 @@ class WeatherClient:
             )
             response.raise_for_status()
             data = response.json()
-            
+
             alerts = []
             for alert in data.get("alerts", []):
                 alerts.append({
@@ -212,6 +212,6 @@ class WeatherClient:
                     "sender": alert["sender_name"],
                     "description": alert["description"],
                 })
-            
+
             logger.info(f"Fetched {len(alerts)} weather alerts for ({lat}, {lon})")
             return alerts

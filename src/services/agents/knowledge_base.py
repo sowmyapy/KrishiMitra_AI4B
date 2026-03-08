@@ -2,7 +2,7 @@
 Knowledge base with RAG (Retrieval Augmented Generation)
 """
 import logging
-from typing import List, Dict, Optional
+
 import chromadb
 from chromadb.config import Settings
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class KnowledgeBase:
     """Vector database knowledge base with semantic search"""
-    
+
     def __init__(self):
         """Initialize ChromaDB and LLM client"""
         self.chroma_client = chromadb.HttpClient(
@@ -22,41 +22,41 @@ class KnowledgeBase:
             port=settings.chromadb_port,
             settings=Settings(anonymized_telemetry=False)
         )
-        
+
         self.llm = get_llm()  # Use LLM factory for embeddings
-        
+
         # Create or get collections
         self.agricultural_knowledge = self.chroma_client.get_or_create_collection(
             name="agricultural_knowledge",
             metadata={"description": "General agricultural knowledge and best practices"}
         )
-        
+
         self.pest_disease_knowledge = self.chroma_client.get_or_create_collection(
             name="pest_disease_knowledge",
             metadata={"description": "Pest and disease identification and treatment"}
         )
-        
+
         self.crop_management = self.chroma_client.get_or_create_collection(
             name="crop_management",
             metadata={"description": "Crop-specific management practices"}
         )
-        
+
         logger.info("Knowledge base initialized")
-    
-    async def _generate_embedding(self, text: str) -> List[float]:
+
+    async def _generate_embedding(self, text: str) -> list[float]:
         """Generate embedding for text using LLM provider"""
         return await self.llm.generate_embedding(text)
-    
+
     async def add_document(
         self,
         collection_name: str,
         document: str,
-        metadata: Dict,
-        doc_id: Optional[str] = None
+        metadata: dict,
+        doc_id: str | None = None
     ):
         """
         Add document to knowledge base
-        
+
         Args:
             collection_name: Name of collection
             document: Document text
@@ -64,10 +64,10 @@ class KnowledgeBase:
             doc_id: Optional document ID
         """
         collection = getattr(self, collection_name)
-        
+
         # Generate embedding
         embedding = await self._generate_embedding(document)
-        
+
         # Add to collection
         collection.add(
             documents=[document],
@@ -75,37 +75,37 @@ class KnowledgeBase:
             metadatas=[metadata],
             ids=[doc_id] if doc_id else None
         )
-        
+
         logger.info(f"Added document to {collection_name}")
-    
+
     async def search(
         self,
         query: str,
         collection_name: str = "agricultural_knowledge",
         n_results: int = 5
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Search knowledge base
-        
+
         Args:
             query: Search query
             collection_name: Collection to search
             n_results: Number of results to return
-        
+
         Returns:
             List of relevant documents with metadata
         """
         collection = getattr(self, collection_name)
-        
+
         # Generate query embedding
         query_embedding = await self._generate_embedding(query)
-        
+
         # Search
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results
         )
-        
+
         # Format results
         documents = []
         for i in range(len(results['documents'][0])):
@@ -114,64 +114,64 @@ class KnowledgeBase:
                 "metadata": results['metadatas'][0][i],
                 "distance": results['distances'][0][i]
             })
-        
+
         logger.info(f"Found {len(documents)} results for query: {query[:50]}...")
         return documents
-    
+
     async def search_pest_disease(
         self,
         symptoms: str,
         crop_type: str,
         n_results: int = 3
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Search for pest/disease information
-        
+
         Args:
             symptoms: Description of symptoms
             crop_type: Type of crop
             n_results: Number of results
-        
+
         Returns:
             List of matching pest/disease information
         """
         query = f"Crop: {crop_type}. Symptoms: {symptoms}"
         return await self.search(query, "pest_disease_knowledge", n_results)
-    
+
     async def search_crop_management(
         self,
         crop_type: str,
         issue: str,
         n_results: int = 3
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """
         Search for crop management practices
-        
+
         Args:
             crop_type: Type of crop
             issue: Management issue or question
             n_results: Number of results
-        
+
         Returns:
             List of management recommendations
         """
         query = f"Crop: {crop_type}. Issue: {issue}"
         return await self.search(query, "crop_management", n_results)
-    
+
     async def get_context_for_query(
         self,
         query: str,
-        collections: Optional[List[str]] = None,
+        collections: list[str] | None = None,
         n_results: int = 3
     ) -> str:
         """
         Get relevant context for a query from multiple collections
-        
+
         Args:
             query: User query
             collections: List of collections to search (default: all)
             n_results: Results per collection
-        
+
         Returns:
             Formatted context string
         """
@@ -181,22 +181,22 @@ class KnowledgeBase:
                 "pest_disease_knowledge",
                 "crop_management"
             ]
-        
+
         context_parts = []
-        
+
         for collection_name in collections:
             results = await self.search(query, collection_name, n_results)
-            
+
             if results:
                 context_parts.append(f"\n## From {collection_name}:")
                 for i, doc in enumerate(results, 1):
                     context_parts.append(f"\n{i}. {doc['content']}")
-        
+
         return "\n".join(context_parts)
-    
+
     async def seed_initial_knowledge(self):
         """Seed knowledge base with initial agricultural knowledge"""
-        
+
         # Agricultural best practices
         agricultural_docs = [
             {
@@ -212,7 +212,7 @@ class KnowledgeBase:
                 "metadata": {"category": "irrigation", "importance": "medium"}
             },
         ]
-        
+
         for i, doc in enumerate(agricultural_docs):
             await self.add_document(
                 "agricultural_knowledge",
@@ -220,7 +220,7 @@ class KnowledgeBase:
                 doc["metadata"],
                 f"ag_doc_{i}"
             )
-        
+
         # Pest and disease knowledge
         pest_disease_docs = [
             {
@@ -236,7 +236,7 @@ class KnowledgeBase:
                 "metadata": {"disease": "leaf_blight", "severity": "high", "crops": "rice,wheat"}
             },
         ]
-        
+
         for i, doc in enumerate(pest_disease_docs):
             await self.add_document(
                 "pest_disease_knowledge",
@@ -244,7 +244,7 @@ class KnowledgeBase:
                 doc["metadata"],
                 f"pest_doc_{i}"
             )
-        
+
         # Crop management
         crop_management_docs = [
             {
@@ -260,7 +260,7 @@ class KnowledgeBase:
                 "metadata": {"crop": "cotton", "stress": "heat", "practice": "stress_management"}
             },
         ]
-        
+
         for i, doc in enumerate(crop_management_docs):
             await self.add_document(
                 "crop_management",
@@ -268,5 +268,5 @@ class KnowledgeBase:
                 doc["metadata"],
                 f"crop_doc_{i}"
             )
-        
+
         logger.info("Knowledge base seeded with initial documents")

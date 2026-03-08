@@ -3,6 +3,7 @@ Logging configuration
 """
 import logging
 import sys
+
 from .settings import settings
 
 # Try to import pythonjsonlogger, but make it optional
@@ -15,17 +16,17 @@ except ImportError:
 
 def setup_logging():
     """Configure application logging"""
-    
+
     # Create logger
     logger = logging.getLogger()
     logger.setLevel(getattr(logging, settings.log_level.upper()))
-    
+
     # Remove existing handlers
     logger.handlers = []
-    
+
     # Console handler with JSON formatting
     console_handler = logging.StreamHandler(sys.stdout)
-    
+
     if settings.environment == "production" and HAS_JSON_LOGGER:
         # JSON format for production (easier to parse)
         formatter = jsonlogger.JsonFormatter(
@@ -38,10 +39,10 @@ def setup_logging():
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
-    
+
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
-    
+
     # File handler for errors
     if settings.environment == "production":
         try:
@@ -54,7 +55,7 @@ def setup_logging():
         except Exception as e:
             # If we can't create the log file, just skip it
             logger.warning(f"Could not create error log file: {e}")
-    
+
     return logger
 
 

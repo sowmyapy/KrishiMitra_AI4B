@@ -1,10 +1,10 @@
 """
 Storage manager for satellite tiles and data
 """
-import logging
-from typing import Dict, Optional
-from datetime import datetime, timedelta
 import hashlib
+import logging
+from datetime import datetime, timedelta
+
 import boto3
 from botocore.exceptions import ClientError
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class StorageManager:
     """Manager for storing satellite tiles and data in S3"""
-    
+
     def __init__(self):
         self.s3_client = boto3.client(
             's3',
@@ -25,7 +25,7 @@ class StorageManager:
         )
         self.satellite_bucket = settings.s3_bucket_satellite
         self.audio_bucket = settings.s3_bucket_audio
-    
+
     def _generate_tile_key(
         self,
         bbox: tuple,
@@ -36,35 +36,35 @@ class StorageManager:
         # Create hash from bbox and dates
         key_string = f"{bbox}_{date_from.isoformat()}_{date_to.isoformat()}"
         hash_value = hashlib.md5(key_string.encode()).hexdigest()
-        
+
         # Organize by date
         date_path = date_from.strftime("%Y/%m/%d")
-        
+
         return f"tiles/{date_path}/{hash_value}.tiff"
-    
+
     async def store_satellite_tile(
         self,
         tile_data: bytes,
         bbox: tuple,
         date_from: datetime,
         date_to: datetime,
-        metadata: Optional[Dict] = None
+        metadata: dict | None = None
     ) -> str:
         """
         Store satellite tile in S3
-        
+
         Args:
             tile_data: Raw tile data
             bbox: Bounding box
             date_from: Start date
             date_to: End date
             metadata: Additional metadata
-        
+
         Returns:
             S3 key of stored tile
         """
         key = self._generate_tile_key(bbox, date_from, date_to)
-        
+
         # Prepare metadata
         s3_metadata = {
             "bbox": str(bbox),
@@ -74,7 +74,7 @@ class StorageManager:
         }
         if metadata:
             s3_metadata.update({k: str(v) for k, v in metadata.items()})
-        
+
         try:
             self.s3_client.put_object(
                 Bucket=self.satellite_bucket,
@@ -88,14 +88,14 @@ class StorageManager:
         except ClientError as e:
             logger.error(f"Failed to store tile {key}: {e}")
             raise
-    
-    async def retrieve_satellite_tile(self, key: str) -> Optional[bytes]:
+
+    async def retrieve_satellite_tile(self, key: str) -> bytes | None:
         """
         Retrieve satellite tile from S3
-        
+
         Args:
             key: S3 key
-        
+
         Returns:
             Tile data or None if not found
         """
@@ -112,7 +112,7 @@ class StorageManager:
                 return None
             logger.error(f"Failed to retrieve tile {key}: {e}")
             raise
-    
+
     async def tile_exists(self, key: str) -> bool:
         """Check if tile exists in S3"""
         try:
@@ -123,7 +123,7 @@ class StorageManager:
             return True
         except ClientError:
             return False
-    
+
     async def store_audio(
         self,
         audio_data: bytes,
@@ -133,20 +133,20 @@ class StorageManager:
     ) -> str:
         """
         Store audio file in S3
-        
+
         Args:
             audio_data: Raw audio data
             farmer_id: Farmer ID
             call_id: Call ID
             audio_type: Type of audio (advisory, recording, etc.)
-        
+
         Returns:
             S3 key of stored audio
         """
         timestamp = datetime.utcnow()
         date_path = timestamp.strftime("%Y/%m/%d")
         key = f"audio/{audio_type}/{date_path}/{farmer_id}/{call_id}.mp3"
-        
+
         try:
             self.s3_client.put_object(
                 Bucket=self.audio_bucket,
@@ -165,8 +165,8 @@ class StorageManager:
         except ClientError as e:
             logger.error(f"Failed to store audio {key}: {e}")
             raise
-    
-    async def retrieve_audio(self, key: str) -> Optional[bytes]:
+
+    async def retrieve_audio(self, key: str) -> bytes | None:
         """Retrieve audio file from S3"""
         try:
             response = self.s3_client.get_object(
@@ -181,27 +181,27 @@ class StorageManager:
                 return None
             logger.error(f"Failed to retrieve audio {key}: {e}")
             raise
-    
+
     async def delete_old_tiles(self, days: int = 365) -> int:
         """
         Delete tiles older than specified days
-        
+
         Args:
             days: Age threshold in days
-        
+
         Returns:
             Number of tiles deleted
         """
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         deleted_count = 0
-        
+
         try:
             paginator = self.s3_client.get_paginator('list_objects_v2')
             pages = paginator.paginate(
                 Bucket=self.satellite_bucket,
                 Prefix='tiles/'
             )
-            
+
             for page in pages:
                 for obj in page.get('Contents', []):
                     if obj['LastModified'].replace(tzinfo=None) < cutoff_date:
@@ -210,7 +210,7 @@ class StorageManager:
                             Key=obj['Key']
                         )
                         deleted_count += 1
-            
+
             logger.info(f"Deleted {deleted_count} old tiles")
             return deleted_count
         except ClientError as e:

@@ -1,8 +1,8 @@
 """Database models"""
+from .advisory import Action, Advisory, Resource
+from .communication import CallRecord, ChatbotSession, ConversationTurn, FarmerFeedback
 from .farmer import Farmer, FarmPlot
 from .monitoring import CropHealthIndicator, StressPrediction
-from .advisory import Advisory, Action, Resource
-from .communication import CallRecord, FarmerFeedback, ChatbotSession, ConversationTurn
 
 __all__ = [
     "Farmer",
