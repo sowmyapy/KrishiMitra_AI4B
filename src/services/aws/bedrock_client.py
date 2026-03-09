@@ -135,7 +135,30 @@ class BedrockClient:
 
         except ClientError as e:
             logger.error(f"Bedrock invocation failed: {e}")
-            raise
+            
+            # Try Groq fallback
+            try:
+                from src.config.settings import settings
+                from groq import Groq
+                
+                if settings.groq_api_key and settings.groq_api_key != "":
+                    logger.info("Attempting Groq fallback after Bedrock failure")
+                    groq_client = Groq(api_key=settings.groq_api_key)
+                    response = groq_client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=messages,
+                        temperature=temperature,
+                        max_tokens=max_tokens
+                    )
+                    completion = response.choices[0].message.content
+                    logger.info(f"Groq fallback succeeded! Generated {len(completion)} chars")
+                    return completion
+                else:
+                    logger.warning("Groq API key not configured, cannot fallback")
+                    raise
+            except Exception as groq_error:
+                logger.error(f"Groq fallback also failed: {groq_error}")
+                raise e  # Re-raise original Bedrock error
 
     def _messages_to_prompt(self, messages: list[dict[str, str]]) -> str:
         """Convert OpenAI-style messages to Claude prompt format"""

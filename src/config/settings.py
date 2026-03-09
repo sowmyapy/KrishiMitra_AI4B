@@ -57,8 +57,8 @@ class Settings(BaseSettings):
     exotel_api_key: str = Field(default="", env="EXOTEL_API_KEY")
     exotel_api_token: str = Field(default="", env="EXOTEL_API_TOKEN")
 
-    # LLM Services (not needed when using AWS Bedrock)
-    openai_api_key: str = Field(default="not-needed-using-bedrock", env="OPENAI_API_KEY")
+    # LLM Services
+    groq_api_key: str = Field(default="", env="GROQ_API_KEY")
     anthropic_api_key: str = Field(default="", env="ANTHROPIC_API_KEY")
     elevenlabs_api_key: str = Field(default="not-needed-using-aws-polly", env="ELEVENLABS_API_KEY")
 
