@@ -16,11 +16,11 @@ import {
   Chip,
   TextField,
   MenuItem,
-  Grid,
   CircularProgress,
   Alert,
   IconButton,
   Tooltip,
+  Grid,
 } from '@mui/material';
 import { Visibility, Refresh } from '@mui/icons-material';
 
@@ -30,6 +30,7 @@ interface Advisory {
   farm_plot_id: string;
   stress_type: string;
   urgency_level: string;
+  advisory_text?: string;
   actions: any[];
   created_at: string;
   expires_at: string;
@@ -163,7 +164,7 @@ export const Advisories = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 select
                 fullWidth
@@ -180,7 +181,7 @@ export const Advisories = () => {
                 <MenuItem value="healthy">Healthy</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <TextField
                 select
                 fullWidth
@@ -195,7 +196,7 @@ export const Advisories = () => {
                 <MenuItem value="low">Low</MenuItem>
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <Box display="flex" alignItems="center" height="100%">
                 <Typography variant="body2" color="textSecondary">
                   Total: {filteredAdvisories.length} advisories
@@ -214,7 +215,7 @@ export const Advisories = () => {
                 <TableCell>Date</TableCell>
                 <TableCell>Stress Type</TableCell>
                 <TableCell>Urgency</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Advisory Message</TableCell>
                 <TableCell>Expires</TableCell>
                 <TableCell align="center">View</TableCell>
               </TableRow>
@@ -249,7 +250,26 @@ export const Advisories = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      {advisory.actions?.length || 0} actions
+                      {advisory.advisory_text ? (
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            whiteSpace: 'pre-wrap',
+                            maxWidth: '400px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {advisory.advisory_text}
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">
+                          {advisory.actions?.length || 0} actions
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>
                       {new Date(advisory.expires_at).toLocaleDateString()}

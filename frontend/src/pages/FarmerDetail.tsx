@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -24,6 +23,7 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Grid,
 } from '@mui/material';
 import { ArrowBack, Phone, Assessment, Edit } from '@mui/icons-material';
 import { useFarmer } from '@/hooks/useFarmers';
@@ -213,7 +213,7 @@ export const FarmerDetail = () => {
 
       <Grid container spacing={3}>
         {/* Farmer Information */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -264,7 +264,7 @@ export const FarmerDetail = () => {
         </Grid>
 
         {/* Actions */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -309,7 +309,7 @@ export const FarmerDetail = () => {
         </Grid>
 
         {/* Farm Plot Information - Placeholder */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -324,7 +324,7 @@ export const FarmerDetail = () => {
         </Grid>
 
         {/* Advisories Section */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -347,7 +347,7 @@ export const FarmerDetail = () => {
                         <TableCell>Date</TableCell>
                         <TableCell>Stress Type</TableCell>
                         <TableCell>Urgency</TableCell>
-                        <TableCell>Actions</TableCell>
+                        <TableCell>Advisory Message</TableCell>
                         <TableCell>Expires</TableCell>
                       </TableRow>
                     </TableHead>
@@ -381,17 +381,19 @@ export const FarmerDetail = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            {advisory.actions && advisory.actions.length > 0 ? (
-                              <Box>
-                                {advisory.actions.map((action: any, idx: number) => (
-                                  <Typography key={idx} variant="body2" sx={{ mb: 0.5 }}>
-                                    {idx + 1}. {action.description} ({action.timing})
-                                  </Typography>
-                                ))}
-                              </Box>
+                            {advisory.advisory_text ? (
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  whiteSpace: 'pre-wrap',
+                                  maxWidth: '400px'
+                                }}
+                              >
+                                {advisory.advisory_text}
+                              </Typography>
                             ) : (
                               <Typography variant="body2" color="textSecondary">
-                                No actions
+                                No advisory text available
                               </Typography>
                             )}
                           </TableCell>
