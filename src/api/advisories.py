@@ -342,11 +342,13 @@ Example structure in {lang_name}:
 
 Generate the advisory message {lang_instruction}:"""
 
-        try:
-            messages = [
-                {"role": "user", "content": prompt}
-            ]
+        # Let LLM factory handle Bedrock->Groq fallback
+        # Only catch if BOTH fail
+        messages = [
+            {"role": "user", "content": prompt}
+        ]
 
+        try:
             advisory_text = await llm.generate_completion(
                 messages=messages,
                 temperature=0.7,
@@ -356,7 +358,8 @@ Generate the advisory message {lang_instruction}:"""
             logger.info(f"LLM generated advisory in {lang_name}: {len(advisory_text)} chars")
 
         except Exception as llm_error:
-            logger.error(f"LLM generation failed: {llm_error}, using fallback template")
+            # Both Bedrock AND Groq failed, use template fallback
+            logger.error(f"All LLM providers failed: {llm_error}, using fallback template")
 
             # Fallback to simple template WITHOUT technical terms or symbols
             lang_code = farmer.preferred_language.lower()
