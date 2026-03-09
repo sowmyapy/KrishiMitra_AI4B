@@ -66,6 +66,7 @@ class AdvisoryResponse(BaseModel):
     farm_plot_id: UUID
     stress_type: str
     urgency_level: str
+    advisory_text: str | None = None
     actions: list
     created_at: datetime
     expires_at: datetime
